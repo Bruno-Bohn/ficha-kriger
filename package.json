@@ -1,0 +1,19 @@
+{
+  "name": "ficha-rpg",
+  "version": "1.0.0",
+  "description": "Ficha de personagem RPG - página web com autenticação por senha e banco Neon",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "express": "^4.21.2",
+    "pg": "^8.13.1"
+  }
+}

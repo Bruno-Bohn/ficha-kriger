@@ -1,0 +1,22 @@
+# Blueprint do Render — https://render.com/docs/blueprint-spec
+# Ao conectar o repositorio no Render (New > Blueprint), este arquivo
+# cria o servico automaticamente. Depois preencha DATABASE_URL e APP_PASSWORD
+# no painel (Environment) — elas ficam com sync: false de proposito.
+
+services:
+  - type: web
+    name: ficha-rpg
+    runtime: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/session
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: DATABASE_URL
+        sync: false   # cole aqui a connection string do Neon
+      - key: APP_PASSWORD
+        sync: false   # a senha fixa da tela de login
+      - key: SESSION_SECRET
+        generateValue: true

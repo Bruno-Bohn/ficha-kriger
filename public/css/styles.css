@@ -1,0 +1,651 @@
+/* ============================================================
+   Ficha de Personagem — tema pergaminho & tinta
+   Mobile-first: layout de 1 coluna; grades ampliam em >=760px
+   ============================================================ */
+
+:root {
+  --parchment: #efe9dc;
+  --parchment-2: #e7dfcd;
+  --panel: #f7f3e9;
+  --ink: #211d18;
+  --ink-soft: #574e42;
+  --line: #b7ab94;
+  --line-soft: #d6ccb6;
+  --accent: #7a2f2f;
+  --accent-2: #3f3a55;
+  --ok: #2f6b3f;
+  --focus: #8a6d3b;
+  --radius: 10px;
+  --shadow: 0 2px 10px rgba(33, 29, 24, .12);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background:
+    radial-gradient(1200px 600px at 85% -10%, rgba(122, 47, 47, .06), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(63, 58, 85, .07), transparent 60%),
+    var(--parchment);
+  color: var(--ink);
+  font-family: "EB Garamond", Georgia, "Times New Roman", serif;
+  font-size: 17px;
+  line-height: 1.35;
+  min-height: 100dvh;
+}
+
+h1, h2, h3, .tab, .btn, .def-name, .attr-name {
+  font-family: "Cinzel", "EB Garamond", Georgia, serif;
+}
+
+.view[hidden], [hidden] { display: none !important; }
+
+/* ---------------- Inputs base ---------------- */
+
+input, textarea {
+  font: inherit;
+  color: var(--ink);
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px dashed var(--line);
+  padding: 4px 6px;
+  width: 100%;
+  min-width: 0;
+  border-radius: 0;
+}
+
+textarea {
+  border: 1.5px dashed var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .35);
+  resize: vertical;
+  line-height: 1.45;
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  border-color: var(--focus);
+  border-style: solid;
+  background: rgba(255, 255, 255, .6);
+}
+
+input::placeholder, textarea::placeholder { color: #a99d87; opacity: 1; }
+
+/* Campos com rotulo */
+.fld { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fld > span {
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+.fld-block { margin-top: 10px; }
+
+/* ---------------- Botoes ---------------- */
+
+.btn {
+  cursor: pointer;
+  border: 1.5px solid var(--ink);
+  background: var(--ink);
+  color: var(--parchment);
+  border-radius: 8px;
+  padding: 9px 16px;
+  font-size: .85rem;
+  letter-spacing: .04em;
+  transition: transform .08s ease, opacity .15s ease;
+}
+.btn:hover { opacity: .88; }
+.btn:active { transform: scale(.97); }
+.btn-primary { background: var(--accent); border-color: var(--accent); }
+.btn-ghost { background: transparent; color: var(--ink); }
+.btn-danger { background: transparent; color: var(--accent); border-color: var(--accent); }
+
+/* ============================================================
+   LOGIN
+   ============================================================ */
+
+#view-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: 20px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--panel);
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 36px 28px;
+  text-align: center;
+  position: relative;
+}
+.login-card::before, .login-card::after {
+  content: "";
+  position: absolute;
+  width: 26px; height: 26px;
+  border: 2px solid var(--ink);
+}
+.login-card::before { top: 8px; left: 8px; border-right: none; border-bottom: none; }
+.login-card::after { bottom: 8px; right: 8px; border-left: none; border-top: none; }
+
+.login-eye { font-size: 2.2rem; color: var(--accent); }
+.login-title { margin: 8px 0 4px; font-size: 1.5rem; letter-spacing: .04em; }
+.login-sub { margin: 0 0 22px; color: var(--ink-soft); font-style: italic; }
+
+#login-form { display: flex; flex-direction: column; gap: 14px; }
+#login-password {
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 14px;
+  text-align: center;
+  font-size: 1.1rem;
+  letter-spacing: .2em;
+  background: rgba(255, 255, 255, .5);
+}
+#login-btn { padding: 12px; font-size: 1rem; background: var(--ink); }
+.login-error { color: var(--accent); margin: 0; font-weight: 600; }
+
+/* ============================================================
+   BARRA SUPERIOR / ABAS
+   ============================================================ */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  background: var(--panel);
+  border-bottom: 2px solid var(--ink);
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+.topbar-title { margin: 0; font-size: 1.25rem; }
+.topbar-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.save-status {
+  font-size: .8rem;
+  font-style: italic;
+  color: var(--ink-soft);
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--line-soft);
+  white-space: nowrap;
+}
+.save-status[data-state="saving"] { color: var(--focus); border-color: var(--focus); }
+.save-status[data-state="saved"] { color: var(--ok); border-color: var(--ok); }
+.save-status[data-state="error"] { color: var(--accent); border-color: var(--accent); font-weight: 700; }
+
+.auto-total-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .78rem;
+  color: var(--ink-soft);
+  cursor: pointer;
+  user-select: none;
+}
+
+.tabs {
+  display: flex;
+  overflow-x: auto;
+  background: var(--parchment-2);
+  border-bottom: 1.5px solid var(--line);
+  position: sticky;
+  top: 58px;
+  z-index: 29;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+
+.tab {
+  flex: 1 0 auto;
+  border: none;
+  background: transparent;
+  padding: 12px 18px;
+  font-size: .82rem;
+  letter-spacing: .05em;
+  color: var(--ink-soft);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  white-space: nowrap;
+}
+.tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 700;
+  background: rgba(255, 255, 255, .35);
+}
+
+.tabpane { display: none; }
+.tabpane.active { display: block; }
+
+/* ============================================================
+   LISTA DE FICHAS
+   ============================================================ */
+
+.list-wrap { max-width: 760px; margin: 0 auto; padding: 20px 16px 60px; }
+.sheet-list { display: flex; flex-direction: column; gap: 12px; }
+
+.sheet-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--panel);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: transform .1s ease;
+}
+.sheet-card:hover { transform: translateY(-2px); }
+.sheet-card-name { font-family: "Cinzel", serif; font-size: 1.05rem; font-weight: 700; }
+.sheet-card-date { font-size: .78rem; color: var(--ink-soft); font-style: italic; }
+.sheet-card .btn-danger { padding: 6px 10px; font-size: .75rem; flex-shrink: 0; }
+.list-empty { text-align: center; color: var(--ink-soft); font-style: italic; margin-top: 40px; }
+
+/* ============================================================
+   FICHA — estrutura
+   ============================================================ */
+
+.sheet-wrap { max-width: 1180px; margin: 0 auto; padding: 16px 12px 80px; }
+
+.panel {
+  background: var(--panel);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px 14px;
+  box-shadow: var(--shadow);
+  min-width: 0;
+}
+
+.panel-title {
+  margin: -16px -14px 14px;
+  padding: 10px 14px;
+  font-size: .95rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  border-bottom: 1.5px solid var(--line);
+  background: linear-gradient(rgba(33, 29, 24, .04), transparent);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.sub-title {
+  font-size: .8rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 18px 0 8px;
+  border-bottom: 1px solid var(--line-soft);
+  padding-bottom: 4px;
+}
+
+.page-title {
+  text-align: center;
+  font-size: 1.3rem;
+  letter-spacing: .08em;
+  margin: 8px 0 20px;
+  color: var(--ink);
+}
+
+.grid-p1, .grid-p2 { display: grid; grid-template-columns: 1fr; gap: 14px; }
+.span-all { grid-column: 1 / -1; }
+
+/* ---------------- Identidade ---------------- */
+
+.identity-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.identity-grid .fld-lg { grid-column: 1 / -1; }
+.identity-grid .fld-lg input { font-size: 1.3rem; font-family: "Cinzel", serif; font-weight: 600; }
+
+/* ---------------- Atributos (losangos) ---------------- */
+
+.attrs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: 14px;
+  justify-items: center;
+}
+
+.attr { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.attr-name { font-size: .8rem; font-weight: 700; letter-spacing: .1em; color: var(--ink-soft); }
+
+.attr-diamond {
+  width: 78px; height: 78px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--panel);
+  border: 2px solid var(--ink);
+  transform: rotate(45deg);
+  margin: 12px 0 6px;
+  box-shadow: 2px 2px 0 rgba(33, 29, 24, .25);
+}
+.attr-diamond input {
+  transform: rotate(-45deg);
+  border: none;
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 700;
+  width: 66px;
+  padding: 0;
+}
+.attr-temp {
+  display: flex; align-items: center; gap: 4px;
+  font-size: .68rem; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--ink-soft);
+}
+.attr-temp input {
+  width: 44px;
+  text-align: center;
+  border: 1.5px solid var(--line);
+  border-radius: 6px;
+  padding: 2px;
+}
+
+/* ---------------- PV/PM/Alma ---------------- */
+
+.pools { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.pool {
+  border: 1.5px solid var(--line-soft);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.pool h3 { margin: 0; text-align: center; font-size: 1rem; letter-spacing: .15em; }
+.pool input { text-align: center; font-size: 1.15rem; font-weight: 600; }
+
+.alma { margin-top: 14px; text-align: center; }
+.alma h3 { margin: 0 0 10px; font-size: .85rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft); }
+.alma-diamonds { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+
+.diamond-toggle {
+  width: 30px; height: 30px;
+  border: 2px solid var(--ink);
+  background: var(--panel);
+  transform: rotate(45deg);
+  cursor: pointer;
+  padding: 0;
+  transition: background .12s ease;
+}
+.diamond-toggle[aria-pressed="true"] { background: var(--accent-2); border-color: var(--accent-2); }
+
+/* ---------------- Defesas / Morte ---------------- */
+
+.defenses { display: flex; flex-direction: column; gap: 10px; }
+.def-row {
+  display: grid;
+  grid-template-columns: 1fr 74px 58px;
+  align-items: center;
+  gap: 10px;
+}
+.def-name { font-size: .8rem; letter-spacing: .06em; }
+.def-main {
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  padding: 6px 2px;
+}
+.def-temp {
+  text-align: center;
+  border: 1.5px dashed var(--line);
+  border-radius: 8px;
+  padding: 6px 2px;
+  font-size: .85rem;
+}
+
+.death { margin-top: 18px; }
+.death h3 { margin: 0 0 10px; font-size: .85rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft); text-align: center; }
+.death-groups { display: flex; justify-content: space-around; gap: 10px; flex-wrap: wrap; }
+.death-group { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.death-label { font-size: .75rem; letter-spacing: .05em; }
+.death-label.ok { color: var(--ok); }
+.death-label.bad { color: var(--accent); }
+.hexes { display: flex; gap: 10px; }
+
+.hex-toggle {
+  width: 34px; height: 38px;
+  border: none;
+  background: var(--panel);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  cursor: pointer;
+  position: relative;
+  padding: 0;
+  box-shadow: inset 0 0 0 2.5px var(--ink);
+  transition: background .12s ease;
+}
+.hex-toggle[aria-pressed="true"].hex-ok { background: var(--ok); }
+.hex-toggle[aria-pressed="true"].hex-bad { background: var(--accent); }
+
+/* ---------------- Ataques ---------------- */
+
+.attacks-head, .attack-row {
+  display: grid;
+  grid-template-columns: 1.4fr .6fr .8fr 1.4fr;
+  gap: 8px;
+  align-items: center;
+}
+.attacks-head {
+  font-size: .7rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--ink-soft);
+  font-weight: 600;
+  padding: 0 6px 6px;
+}
+.attack-row { padding: 3px 0; }
+
+/* ---------------- Pericias ---------------- */
+
+.skills-head, .skill-row {
+  display: grid;
+  grid-template-columns: minmax(110px, 1.6fr) 56px 56px 56px 60px;
+  gap: 6px;
+  align-items: center;
+}
+.skills-head {
+  font-size: .68rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--ink-soft);
+  font-weight: 600;
+  padding: 0 4px 6px;
+  position: sticky;
+}
+.skill-row { padding: 2px 0; border-bottom: 1px dotted var(--line-soft); }
+.skill-row:last-child { border-bottom: none; }
+.skill-name { font-size: .95rem; padding-left: 4px; }
+.skill-name input { font-style: italic; }
+.skill-row input {
+  text-align: center;
+  border: 1.5px solid var(--line-soft);
+  border-radius: 6px;
+  padding: 4px 2px;
+  font-size: .95rem;
+}
+.skill-row input.skill-total {
+  border-color: var(--ink);
+  border-width: 2px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, .5);
+}
+.skill-row input.skill-total[readonly] { background: var(--parchment-2); cursor: default; }
+
+/* ---------------- Moedas / Maestrias ---------------- */
+
+.coins { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+.coin { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.coin span { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-soft); font-weight: 600; }
+.coin input {
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  padding: 6px 2px;
+}
+
+.maestria-row { display: grid; grid-template-columns: 1fr 70px; gap: 10px; padding: 3px 0; }
+.maestria-row input:last-child { text-align: center; border: 1.5px solid var(--line-soft); border-radius: 6px; }
+
+/* ---------------- Aliados ---------------- */
+
+.ally { border: 1.5px solid var(--line-soft); border-radius: 8px; padding: 10px; margin-bottom: 10px; }
+.ally textarea { min-height: 52px; }
+.ally-loyalty {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 8px;
+  font-size: .72rem; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--ink-soft);
+}
+.loyalty-box {
+  width: 20px; height: 20px;
+  border: 2px solid var(--ink);
+  background: var(--panel);
+  border-radius: 3px;
+  cursor: pointer;
+  padding: 0;
+}
+.loyalty-box[aria-pressed="true"] { background: var(--accent-2); }
+
+/* ---------------- Detalhes / Personalidade ---------------- */
+
+.details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.personality { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.personality .fld-block { margin-top: 0; }
+
+/* ---------------- Cards (habilidades / magias) ---------------- */
+
+.cards-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+
+.ability-card {
+  background: var(--panel);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: var(--shadow);
+  position: relative;
+}
+.ability-card::before {
+  content: "";
+  position: absolute;
+  top: 6px; left: 6px; right: 6px;
+  height: 14px;
+  border-top: 2px solid var(--ink);
+  border-left: 2px solid var(--ink);
+  border-right: 2px solid var(--ink);
+  opacity: .25;
+  pointer-events: none;
+}
+.ability-card .card-head input {
+  font-family: "Cinzel", serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+.card-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin-top: 10px; }
+.card-fields .fld > span { font-size: .65rem; }
+.ability-card textarea { margin-top: 10px; min-height: 70px; font-size: .95rem; }
+
+/* ---------------- Magias: hex stats ---------------- */
+
+.magic-stats { display: flex; justify-content: center; gap: 26px; margin-bottom: 20px; }
+.hexstat { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.hexstat span { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-soft); font-weight: 700; }
+.hexstat input {
+  width: 64px; height: 70px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background: var(--panel);
+  box-shadow: inset 0 0 0 3px var(--ink);
+  border: none;
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+/* ---------------- Loading ---------------- */
+
+.loading {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(239, 233, 220, .7);
+  z-index: 100;
+}
+.spinner {
+  width: 42px; height: 42px;
+  border: 4px solid var(--line);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ============================================================
+   DESKTOP (>= 760px)
+   ============================================================ */
+
+@media (min-width: 760px) {
+  .grid-p1 { grid-template-columns: 1fr 1fr; }
+  .grid-p2 { grid-template-columns: 1fr 1fr; }
+  .identity-grid { grid-template-columns: 2fr 1fr 1fr 1fr .5fr; }
+  .identity-grid .fld-lg { grid-column: auto; }
+  .personality { grid-template-columns: repeat(5, 1fr); }
+  .cards-grid { grid-template-columns: repeat(2, 1fr); }
+  .details-grid { grid-template-columns: repeat(3, 1fr); }
+  .tabs { justify-content: center; }
+  .tab { flex: 0 0 auto; padding: 12px 34px; font-size: .9rem; }
+}
+
+@media (min-width: 1080px) {
+  .cards-grid { grid-template-columns: repeat(3, 1fr); }
+  #skills {
+    column-count: 2;
+    column-gap: 28px;
+  }
+  .skill-row { break-inside: avoid; }
+}
+
+/* ============================================================
+   CELULAR ESTREITO (<= 420px): compacta grades
+   ============================================================ */
+
+@media (max-width: 420px) {
+  body { font-size: 16px; }
+  .sheet-wrap { padding: 12px 8px 90px; }
+  .attrs { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .attr-diamond { width: 66px; height: 66px; }
+  .attr-diamond input { font-size: 1.35rem; width: 56px; }
+  .skills-head, .skill-row { grid-template-columns: minmax(88px, 1.5fr) 44px 44px 44px 50px; gap: 4px; }
+  .skill-name { font-size: .85rem; }
+  .attacks-head, .attack-row { grid-template-columns: 1.2fr .55fr .7fr 1fr; }
+  .def-row { grid-template-columns: 1fr 64px 50px; }
+  .topbar { padding: 10px 10px; position: static; }
+  .tabs { top: 0; }
+  .auto-total-toggle { font-size: .7rem; }
+  input, textarea, select { font-size: 16px; } /* evita zoom automatico no iOS */
+}
+
+/* ============================================================
+   IMPRESSAO
+   ============================================================ */
+
+@media print {
+  .topbar, .tabs, .save-status { display: none !important; }
+  .tabpane { display: block !important; page-break-after: always; }
+  body { background: white; }
+  .panel { box-shadow: none; }
+}
