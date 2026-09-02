@@ -202,6 +202,36 @@
     ['alcance', 'Alcance'], ['duracao', 'Duração'],
   ];
 
+  const CLERIC_ABILITIES = [
+    { nivel: '1', nome: 'Conjurador Iniciante', tipo: 'Passiva', gasto: 'Nulo', acao: 'Livre', alcance: 'Pessoal', duracao: 'Constante', descricao: 'Quando utilizar uma habilidade considerada magia, recebe um bônus adicional de +1 nos testes de Acerto e CD das magias.' },
+    { nivel: '1', nome: 'S/ Curandeiro', tipo: 'Passiva', gasto: 'Nulo', acao: 'Livre', alcance: 'Pessoal', duracao: 'Constante', descricao: 'Suas magias de cura agora somam seu Espírito no total também.' },
+    { nivel: '1', nome: 'Auxílio Divino', tipo: 'Magia/Passiva', gasto: 'Nulo', acao: 'Padrão', alcance: 'Corporal', duracao: 'Uso', descricao: 'Você abençoa um aliado ou a si em uma ação, somando +1d4 na rolagem de alguma perícia.' },
+    { nivel: '1', nome: 'Chama Sagrada', tipo: 'Magia/Passiva', gasto: 'Nulo', acao: 'Padrão', alcance: 'Médio', duracao: 'Uso', descricao: 'Conjura uma coluna de chamas divinas em um alvo; realize um ataque que, se bem-sucedido, causa 1d8 de dano radiante.' },
+    { nivel: '1', nome: 'Estabilizar', tipo: 'Magia/Passiva', gasto: 'Nulo', acao: 'Padrão', alcance: 'Corporal', duracao: 'Uso', descricao: 'Estabiliza o alvo automaticamente, retirando-o da condição de morrendo.' },
+    { nivel: '1', nome: 'Luz', tipo: 'Magia/Passiva', gasto: 'Nulo', acao: 'Padrão', alcance: 'Corporal', duracao: 'Uso', descricao: 'Encanta um objeto, fazendo-o irradiar luz em alcance curto.' },
+    { nivel: '1', nome: 'C/ Treinamento de Combate', tipo: 'Passiva', gasto: 'Nulo', acao: 'Livre', alcance: 'Pessoal', duracao: 'Constante', descricao: 'Você ganha proficiência em Armaduras Pesadas e +1 ponto de Maestria.' },
+    { nivel: '1', nome: 'Curar Ferimentos', tipo: 'Magia/Ativa', gasto: '1PM', acao: 'Padrão', alcance: 'Corporal', duracao: 'Uso', descricao: 'Conjura energia divina para curar 1d8 PVs do alvo.' },
+    { nivel: '1', nome: 'Benção', tipo: 'Magia/Ativa', gasto: '1PM', acao: 'Padrão', alcance: 'Curto', duracao: '5 turnos', descricao: 'Escolha até 3 alvos, inclusive você. Todos recebem +1d4 em testes de ataque e magias durante 5 turnos.' },
+    { nivel: '1', nome: 'Palavra Curativa', tipo: 'Magia/Ativa', gasto: '1PM', acao: 'Movimento', alcance: 'Médio', duracao: 'Uso', descricao: 'Cura 1d4 PVs do alvo através de uma prece rápida.' },
+    { nivel: '1', nome: 'Escudo da Fé', tipo: 'Magia/Ativa', gasto: '1PM', acao: 'Movimento', alcance: 'Pessoal', duracao: '5 turnos', descricao: 'Uma capa de energia divina envolve seu corpo, concedendo +2 de CA por 5 turnos.' },
+    { nivel: '1', nome: 'Detectar Bem e Mal', tipo: 'Passiva', gasto: 'Nulo', acao: 'Padrão', alcance: 'Extenso', duracao: '10 turnos', descricao: 'Permite detectar Corruptores, Mortos-Vivos e Celestiais, além de saber se um local é consagrado ou corrompido.' },
+    { nivel: '2', nome: 'S/ Santuário', tipo: 'Ativa', gasto: '1PM', acao: 'Padrão', alcance: 'Curto', duracao: '5 turnos', descricao: 'Conjura proteção sobre um alvo, concedendo desvantagem a ataques contra ele e vantagem em testes de resistência. Se o alvo causar dano, a habilidade é encerrada.' },
+    { nivel: '2', nome: 'S/ Retribuição', tipo: 'Passiva', gasto: 'Nulo', acao: 'Livre', alcance: 'Pessoal', duracao: 'Constante', descricao: 'Sempre que conjurar uma magia de cura, você também recupera 3 PVs por ponto de mana gasto.' },
+    { nivel: '2', nome: 'C/ Consagrar Armas', tipo: 'Ativa', gasto: '2PM', acao: 'Padrão', alcance: 'Curto', duracao: '5 turnos', descricao: 'Escolha até 3 alvos. Durante a duração, seus ataques com armas causam +1d4 de dano radiante adicional.' },
+    { nivel: '2', nome: 'C/ Proteger Aliado', tipo: 'Passiva', gasto: 'Nulo', acao: 'Reação', alcance: 'Corporal', duracao: 'Uso', descricao: 'Quando um aliado próximo for atacado, você pode reagir para conceder +2 de CA contra aquele ataque.' },
+    { nivel: '2', nome: 'Raio de Luz', tipo: 'Magia/Ativa', gasto: '2PM', acao: 'Padrão', alcance: 'Médio', duracao: 'Uso', descricao: 'Realiza um ataque mágico que causa 3d6 de dano radiante. Se acertar, o alvo testa Vigor ou sofre desvantagem em seu próximo ataque.' },
+    { nivel: '2', nome: 'Enfraquecer', tipo: 'Magia/Ativa', gasto: '2PM', acao: 'Padrão', alcance: 'Médio', duracao: '5 turnos', descricao: 'Escolha até 3 inimigos. Eles sofrem desvantagem em testes de Força e Agilidade e podem testar Vigor ao fim de seus turnos para encerrar o efeito.' },
+    { nivel: '3', nome: 'Conjurador Resiliente', tipo: 'Ativa', gasto: '1PM', acao: 'Livre', alcance: 'Pessoal', duracao: 'Uso', descricao: 'Reforça uma magia logo após lançá-la, aumentando seu acerto ou a dificuldade do teste de resistência em +2.' },
+    { nivel: '3', nome: 'C/ Arma Espiritual', tipo: 'Ativa', gasto: '2PM', acao: 'Movimento', alcance: 'Curto', duracao: '5 turnos', descricao: 'Conjura uma arma divina de energia que pode se mover e atacar, causando 1d8 + Espírito de dano radiante.' },
+    { nivel: '3', nome: 'C/ Derrubar o Profano', tipo: 'Passiva', gasto: 'Nulo', acao: 'Livre', alcance: 'Pessoal', duracao: 'Constante', descricao: 'Seus ataques contra corruptores e mortos-vivos causam +1d8 de dano radiante adicional.' },
+    { nivel: '3', nome: 'S/ Oração Curativa', tipo: 'Ativa', gasto: '3PM', acao: 'Completa', alcance: 'Médio', duracao: 'Uso', descricao: 'Restaura até quatro aliados à sua escolha. Cada alvo recupera 3d6 + Espírito pontos de vida.' },
+    { nivel: '3', nome: 'S/ Cura do Sacerdote', tipo: 'Passiva', gasto: 'Nulo', acao: 'Livre', alcance: 'Pessoal', duracao: 'Constante', descricao: 'Todas as suas magias de cura restauram um adicional de +1d4.' },
+    { nivel: '3', nome: 'Silêncio', tipo: 'Magia/Ativa', gasto: '2PM', acao: 'Padrão', alcance: 'Curto', duracao: '5 turnos', descricao: 'Cria uma área onde nenhum som pode ser produzido ou ouvido. Magias com componente verbal não podem ser lançadas dentro da zona.' },
+    { nivel: '3', nome: 'Ajuda', tipo: 'Magia/Ativa', gasto: '3PM', acao: 'Padrão', alcance: 'Médio', duracao: 'Uso', descricao: 'Atinge até três alvos. Cada um recebe 10 PVs temporários e vantagem em seu próximo ataque.' },
+    { nivel: 'restrita', nome: 'Consagrar Armas / Cruzado', tipo: 'Restrita', gasto: 'Nulo', acao: 'Livre', alcance: 'Médio', duracao: '5 turnos', descricao: 'Sua divindade abençoa o campo de batalha. Você recebe +10 no acerto com armas, enquanto seus aliados recebem +5 no acerto.' },
+    { nivel: 'restrita', nome: 'Consagrar Terreno / Sacerdote', tipo: 'Restrita', gasto: 'Nulo', acao: 'Livre', alcance: 'Longo', duracao: '5 turnos', descricao: 'Magias divinas têm vantagem e todas as magias de cura dentro da área recuperam automaticamente o valor máximo possível.' },
+  ];
+
   function buildStaticBlocks() {
     // Atributos (losangos)
     $('#attrs').innerHTML = ATTRS.map(a => `
@@ -288,6 +318,81 @@
       </div>`).join('');
   }
 
+  function updatePathUI() {
+    const isCleric = sheetData.caminho === 'Clérigo';
+    $('#btn-open-abilities').disabled = !isCleric;
+    $('#path-helper').textContent = isCleric
+      ? 'Preencha manualmente ou escolha uma habilidade pronta do catálogo do Clérigo.'
+      : 'Selecione Clérigo no campo Caminho da ficha para acessar o catálogo.';
+  }
+
+  function renderAbilityCatalog() {
+    const query = $('#ability-search').value.trim().toLocaleLowerCase('pt-BR');
+    const level = $('#ability-level').value;
+    const selectedNames = new Set(
+      Array.from({ length: 8 }, (_, i) => sheetData[`hab.${i}.nome`]).filter(Boolean)
+    );
+    const matches = CLERIC_ABILITIES.filter(ability => {
+      const text = `${ability.nome} ${ability.tipo} ${ability.descricao}`.toLocaleLowerCase('pt-BR');
+      return (!level || ability.nivel === level) && (!query || text.includes(query));
+    });
+
+    $('#ability-empty').hidden = matches.length > 0;
+    $('#ability-catalog').innerHTML = matches.map((ability, index) => {
+      const sourceIndex = CLERIC_ABILITIES.indexOf(ability);
+      const added = selectedNames.has(ability.nome);
+      const levelLabel = ability.nivel === 'restrita' ? 'Restrita' : `Nível ${ability.nivel}º`;
+      return `
+        <article class="catalog-card">
+          <div class="catalog-card-top">
+            <span class="level-badge">${levelLabel}</span>
+            <button type="button" class="btn ${added ? 'btn-added' : 'btn-primary'}" data-add-ability="${sourceIndex}" ${added ? 'disabled' : ''}>${added ? 'Adicionada ✓' : 'Adicionar'}</button>
+          </div>
+          <details ${index === 0 && matches.length < 4 ? 'open' : ''}>
+            <summary>${ability.nome}</summary>
+            <dl class="catalog-meta">
+              <div><dt>Tipo</dt><dd>${ability.tipo}</dd></div><div><dt>Gasto</dt><dd>${ability.gasto}</dd></div>
+              <div><dt>Ação</dt><dd>${ability.acao}</dd></div><div><dt>Alcance</dt><dd>${ability.alcance}</dd></div>
+              <div><dt>Duração</dt><dd>${ability.duracao}</dd></div>
+            </dl>
+            <p>${ability.descricao}</p>
+          </details>
+        </article>`;
+    }).join('');
+  }
+
+  function addClericAbility(ability) {
+    const slot = Array.from({ length: 8 }, (_, i) => i)
+      .find(i => !String(sheetData[`hab.${i}.nome`] ?? '').trim());
+    if (slot === undefined) {
+      alert('Os 8 espaços de habilidade já estão preenchidos. Apague uma habilidade para liberar espaço.');
+      return;
+    }
+    ['nome', 'tipo', 'gasto', 'acao', 'alcance', 'duracao', 'descricao'].forEach(key => {
+      sheetData[`hab.${slot}.${key}`] = ability[key];
+    });
+    fillForm();
+    scheduleSave();
+    renderAbilityCatalog();
+  }
+
+  $('#btn-open-abilities').addEventListener('click', () => {
+    $('#ability-search').value = '';
+    $('#ability-level').value = '';
+    renderAbilityCatalog();
+    $('#ability-picker').showModal();
+    setTimeout(() => $('#ability-search').focus(), 0);
+  });
+  $('#ability-search').addEventListener('input', renderAbilityCatalog);
+  $('#ability-level').addEventListener('change', renderAbilityCatalog);
+  $('#ability-catalog').addEventListener('click', e => {
+    const button = e.target.closest('[data-add-ability]');
+    if (button) addClericAbility(CLERIC_ABILITIES[Number(button.dataset.addAbility)]);
+  });
+  $('#ability-picker').addEventListener('click', e => {
+    if (e.target === $('#ability-picker')) $('#ability-picker').close();
+  });
+
   /* ---------------- Binding de dados ---------------- */
 
   function fillForm() {
@@ -299,12 +404,14 @@
     });
     applyAutoTotalMode();
     recalcAllTotals();
+    updatePathUI();
   }
 
   function onFieldInput(e) {
     const el = e.target;
     if (!el.dataset.f) return;
     sheetData[el.dataset.f] = el.value;
+    if (el.dataset.f === 'caminho') updatePathUI();
     if (/^pericia\..+\.(ante|treino|estatr)$/.test(el.dataset.f)) {
       recalcTotal(el.closest('.skill-row'));
     }
@@ -457,6 +564,7 @@
 
   const sheetView = views.sheet;
   sheetView.addEventListener('input', onFieldInput);
+  sheetView.addEventListener('change', onFieldInput);
   sheetView.addEventListener('click', onToggleClick);
 
   window.addEventListener('hashchange', route);

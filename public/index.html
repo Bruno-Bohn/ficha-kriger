@@ -73,7 +73,12 @@
             <div class="identity-grid">
               <label class="fld fld-lg"><span>Nome</span><input data-f="nome" autocomplete="off"></label>
               <label class="fld"><span>Linhagem</span><input data-f="linhagem"></label>
-              <label class="fld"><span>Caminho</span><input data-f="caminho"></label>
+              <label class="fld"><span>Caminho</span>
+                <select data-f="caminho" id="caminho-select">
+                  <option value="">Selecione...</option>
+                  <option value="Clérigo">Clérigo</option>
+                </select>
+              </label>
               <label class="fld"><span>Antecedente</span><input data-f="antecedente"></label>
               <label class="fld fld-sm"><span>Nível</span><input data-f="nivel" inputmode="numeric"></label>
             </div>
@@ -224,7 +229,13 @@
 
       <!-- ==================== ABA 3: CAMINHO ==================== -->
       <div class="tabpane" id="tab-caminho">
-        <h2 class="page-title">❖ Habilidades do Caminho ❖</h2>
+        <div class="path-heading">
+          <div>
+            <h2 class="page-title">❖ Habilidades do Caminho ❖</h2>
+            <p id="path-helper" class="path-helper">Selecione um Caminho na ficha para acessar suas habilidades.</p>
+          </div>
+          <button type="button" id="btn-open-abilities" class="btn btn-primary" disabled>+ Escolher habilidades</button>
+        </div>
         <div class="cards-grid" id="habilidades"></div>
       </div>
 
@@ -242,6 +253,25 @@
   </section>
 
   <div id="loading" class="loading" hidden><div class="spinner"></div></div>
+
+  <dialog id="ability-picker" class="ability-picker" aria-labelledby="ability-picker-title">
+    <form method="dialog" class="picker-shell">
+      <header class="picker-header">
+        <div>
+          <span class="picker-kicker">Caminho do Clérigo</span>
+          <h2 id="ability-picker-title">Escolha uma habilidade</h2>
+          <p>Consulte os detalhes e adicione a habilidade diretamente à ficha.</p>
+        </div>
+        <button class="picker-close" value="cancel" aria-label="Fechar">×</button>
+      </header>
+      <div class="picker-toolbar">
+        <label class="picker-search"><span>Buscar</span><input id="ability-search" type="search" placeholder="Nome ou descrição da habilidade..."></label>
+        <label class="picker-level"><span>Nível</span><select id="ability-level"><option value="">Todos</option><option value="1">1º</option><option value="2">2º</option><option value="3">3º</option><option value="restrita">Restritas</option></select></label>
+      </div>
+      <div id="ability-catalog" class="ability-catalog"></div>
+      <p id="ability-empty" class="picker-empty" hidden>Nenhuma habilidade encontrada.</p>
+    </form>
+  </dialog>
 
   <script src="js/app.js"></script>
 </body>

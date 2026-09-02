@@ -46,7 +46,7 @@ h1, h2, h3, .tab, .btn, .def-name, .attr-name {
 
 /* ---------------- Inputs base ---------------- */
 
-input, textarea {
+input, textarea, select {
   font: inherit;
   color: var(--ink);
   background: transparent;
@@ -66,7 +66,7 @@ textarea {
   line-height: 1.45;
 }
 
-input:focus, textarea:focus {
+input:focus, textarea:focus, select:focus {
   outline: none;
   border-color: var(--focus);
   border-style: solid;
@@ -74,6 +74,7 @@ input:focus, textarea:focus {
 }
 
 input::placeholder, textarea::placeholder { color: #a99d87; opacity: 1; }
+select { cursor: pointer; }
 
 /* Campos com rotulo */
 .fld { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
@@ -101,6 +102,7 @@ input::placeholder, textarea::placeholder { color: #a99d87; opacity: 1; }
 }
 .btn:hover { opacity: .88; }
 .btn:active { transform: scale(.97); }
+.btn:disabled { cursor: not-allowed; opacity: .48; transform: none; }
 .btn-primary { background: var(--accent); border-color: var(--accent); }
 .btn-ghost { background: transparent; color: var(--ink); }
 .btn-danger { background: transparent; color: var(--accent); border-color: var(--accent); }
@@ -530,6 +532,17 @@ input::placeholder, textarea::placeholder { color: #a99d87; opacity: 1; }
 
 .cards-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
 
+.path-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 8px 0 20px;
+}
+.path-heading .page-title { margin: 0 0 4px; text-align: left; }
+.path-helper { margin: 0; color: var(--ink-soft); font-style: italic; }
+.path-heading .btn { flex: 0 0 auto; }
+
 .ability-card {
   background: var(--panel);
   border: 1.5px solid var(--line);
@@ -557,6 +570,47 @@ input::placeholder, textarea::placeholder { color: #a99d87; opacity: 1; }
 .card-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin-top: 10px; }
 .card-fields .fld > span { font-size: .65rem; }
 .ability-card textarea { margin-top: 10px; min-height: 70px; font-size: .95rem; }
+
+/* ---------------- Catálogo de habilidades ---------------- */
+
+.ability-picker {
+  width: min(960px, calc(100% - 24px));
+  max-height: min(88dvh, 820px);
+  padding: 0;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1.5px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: 0 20px 70px rgba(33, 29, 24, .35);
+}
+.ability-picker::backdrop { background: rgba(23, 20, 18, .7); backdrop-filter: blur(2px); }
+.picker-shell { display: flex; flex-direction: column; max-height: inherit; }
+.picker-header {
+  display: flex; justify-content: space-between; gap: 20px;
+  padding: 20px 22px 16px; border-bottom: 1.5px solid var(--line);
+  background: linear-gradient(135deg, rgba(122, 47, 47, .1), transparent 55%);
+}
+.picker-header h2 { margin: 2px 0 4px; font-size: 1.25rem; }
+.picker-header p { margin: 0; color: var(--ink-soft); }
+.picker-kicker { font-size: .7rem; color: var(--accent); text-transform: uppercase; letter-spacing: .14em; font-weight: 700; }
+.picker-close { border: none; background: transparent; color: var(--ink); font-size: 2rem; line-height: 1; cursor: pointer; align-self: flex-start; }
+.picker-toolbar { display: grid; grid-template-columns: 1fr 160px; gap: 12px; padding: 14px 22px; border-bottom: 1px solid var(--line-soft); }
+.picker-search, .picker-level { display: flex; flex-direction: column; gap: 3px; }
+.picker-search span, .picker-level span { font-size: .68rem; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-soft); font-weight: 700; }
+.picker-toolbar input, .picker-toolbar select { border: 1.5px solid var(--line); border-radius: 8px; padding: 9px 10px; background: rgba(255,255,255,.5); }
+.ability-catalog { overflow-y: auto; padding: 16px 22px 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.catalog-card { border: 1.5px solid var(--line); border-radius: 10px; padding: 12px; background: rgba(255,255,255,.28); }
+.catalog-card-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 7px; }
+.catalog-card .btn { padding: 6px 10px; font-size: .72rem; }
+.btn-added { color: var(--ok); background: transparent; border-color: var(--ok); }
+.level-badge { color: var(--accent); font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+.catalog-card summary { cursor: pointer; font-family: "Cinzel", serif; font-weight: 700; padding: 3px 0; }
+.catalog-card p { margin: 10px 0 0; color: var(--ink-soft); }
+.catalog-meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 12px; margin: 12px 0 0; }
+.catalog-meta div { min-width: 0; }
+.catalog-meta dt { font-size: .62rem; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-soft); }
+.catalog-meta dd { margin: 0; font-weight: 600; }
+.picker-empty { text-align: center; padding: 32px; color: var(--ink-soft); font-style: italic; }
 
 /* ---------------- Magias: hex stats ---------------- */
 
@@ -637,6 +691,14 @@ input::placeholder, textarea::placeholder { color: #a99d87; opacity: 1; }
   .tabs { top: 0; }
   .auto-total-toggle { font-size: .7rem; }
   input, textarea, select { font-size: 16px; } /* evita zoom automatico no iOS */
+}
+
+@media (max-width: 680px) {
+  .path-heading { align-items: stretch; flex-direction: column; }
+  .path-heading .btn { width: 100%; }
+  .picker-toolbar, .ability-catalog { grid-template-columns: 1fr; }
+  .ability-picker { width: calc(100% - 12px); max-height: 94dvh; }
+  .picker-header, .picker-toolbar, .ability-catalog { padding-left: 14px; padding-right: 14px; }
 }
 
 /* ============================================================
