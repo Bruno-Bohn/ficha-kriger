@@ -148,8 +148,9 @@
 
   $('#admin-user-form').addEventListener('submit', async e => {
     e.preventDefault();
+    const form = e.currentTarget;
     const message = $('#admin-form-message');
-    const button = e.currentTarget.querySelector('button[type="submit"]');
+    const button = form.querySelector('button[type="submit"]');
     message.hidden = true;
     button.disabled = true;
     try {
@@ -157,7 +158,7 @@
         method: 'POST',
         body: JSON.stringify({ username: $('#admin-new-username').value, password: $('#admin-new-password').value }),
       });
-      e.currentTarget.reset();
+      form.reset();
       message.textContent = 'Usuário criado com sucesso.';
       message.dataset.state = 'success';
       message.hidden = false;
