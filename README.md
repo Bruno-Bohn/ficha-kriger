@@ -2,8 +2,9 @@
 
 Versão web da ficha de personagem (PDF), com:
 
-- **Tela de login com senha fixa** (sem usuário) — a senha fica na variável de ambiente `APP_PASSWORD`
-- **Múltiplas fichas** salvas no banco (lista, criar, excluir)
+- **Login com usuário e senha**, sem cadastro público
+- **Administração interna de usuários** — criar, desativar, reativar e redefinir senhas
+- **Múltiplas fichas por usuário** salvas no banco (lista, criar, excluir)
 - **Salvamento automático** enquanto você digita
 - **Layout responsivo** — otimizado para celular (abas, 1 coluna) e desktop (grade)
 - 4 abas espelhando as 4 páginas do PDF: **Ficha** (atributos, PV/PM, pontos de alma, defesas, testes contra a morte, ataques, perícias), **Inventário & Detalhes**, **Habilidades do Caminho**, **Magias**
@@ -23,19 +24,20 @@ Versão web da ficha de personagem (PDF), com:
 1. Instale o [Node.js 20+](https://nodejs.org)
 2. Copie `.env.example` para `.env` e preencha (ou exporte as variáveis no terminal):
    - `DATABASE_URL` — connection string do Neon
-   - `APP_PASSWORD` — a senha da tela de login
+   - `ADMIN_USERNAME` — usuário do administrador inicial (padrão: `admin`)
+   - `APP_PASSWORD` — senha usada somente para criar o administrador inicial
    - `SESSION_SECRET` — qualquer string longa aleatória
 3. Instale e rode:
 
 ```powershell
 npm install
 # PowerShell: carregar variaveis e iniciar
-$env:DATABASE_URL="postgresql://..."; $env:APP_PASSWORD="minha-senha"; $env:SESSION_SECRET="string-aleatoria-longa"; npm start
+$env:DATABASE_URL="postgresql://..."; $env:ADMIN_USERNAME="admin"; $env:APP_PASSWORD="minha-senha"; $env:SESSION_SECRET="string-aleatoria-longa"; npm start
 ```
 
 Abra http://localhost:3000
 
-> O servidor cria a tabela `sheets` sozinho na primeira execução.
+> O servidor cria e atualiza as tabelas `users` e `sheets` sozinho. Fichas antigas sem proprietário são atribuídas ao administrador inicial.
 
 ## Passo a passo do deploy
 
@@ -65,13 +67,14 @@ git push -u origin main
 2. Conecte o repositório — o Render lê o `render.yaml` e cria o serviço
 3. Quando pedir, preencha:
    - `DATABASE_URL` = connection string do Neon
-   - `APP_PASSWORD` = a senha que você quer na tela de login
+   - `ADMIN_USERNAME` = nome do administrador inicial (opcional; padrão `admin`)
+   - `APP_PASSWORD` = senha do administrador inicial
    - (`SESSION_SECRET` é gerado automaticamente)
 
 **Opção B (manual):**
 1. **New → Web Service**, conecte o repositório
 2. Runtime **Node**, Build `npm ci`, Start `npm start`, plano **Free**
-3. Em **Environment**, adicione `DATABASE_URL`, `APP_PASSWORD` e `SESSION_SECRET`
+3. Em **Environment**, adicione `DATABASE_URL`, `ADMIN_USERNAME`, `APP_PASSWORD` e `SESSION_SECRET`
 
 Pronto — o Render entrega uma URL `https://ficha-rpg-xxxx.onrender.com`.
 
@@ -79,20 +82,31 @@ Pronto — o Render entrega uma URL `https://ficha-rpg-xxxx.onrender.com`.
 
 ## Segurança
 
-- Senha comparada com `timingSafeEqual` + limite de 10 tentativas / 15 min por IP
-- Sessão em cookie `httpOnly` assinado (HMAC), validade de 7 dias
-- Toda a API de fichas exige sessão válida; a senha nunca vai para o frontend
+- Senhas armazenadas com hash `scrypt` e comparação segura
+- Limite de 10 tentativas de login por 15 minutos por IP
+- Sessão em cookie `httpOnly`, `SameSite=Lax`, assinada e com validade de 7 dias
+- Trocar ou redefinir uma senha invalida todas as sessões anteriores da conta
+- Cada usuário acessa somente as próprias fichas; administração é validada no servidor
+- Cabeçalhos de segurança, proteção de origem e health check do banco
 
 ## Estrutura
 
 ```
 ├── src/
-│   ├── server.js    # Express: login, sessão, API de fichas, estáticos
-│   └── db.js        # Pool do Postgres (Neon) + criação da tabela
+│   ├── server.js    # Express: login, usuários, sessões, fichas e estáticos
+│   ├── auth.js      # Hash de senhas e assinatura das sessões
+│   └── db.js        # Pool do Postgres (Neon) + estrutura do banco
 ├── public/
 │   ├── index.html   # SPA: login, lista de fichas, ficha em 4 abas
 │   ├── css/styles.css
 │   └── js/app.js    # binding dos campos, autosave, abas, totais
 ├── render.yaml      # Blueprint do Render
 └── .env.example
+```
+
+## Verificação
+
+```powershell
+npm run check
+npm test
 ```

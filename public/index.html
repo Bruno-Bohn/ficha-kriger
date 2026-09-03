@@ -28,11 +28,22 @@
     </div>
   </section>
 
+  <section id="view-error" class="view" hidden>
+    <div class="login-card">
+      <div class="login-eye">!</div>
+      <h1 class="login-title">Não foi possível conectar</h1>
+      <p id="app-error-message" class="login-sub">O serviço está temporariamente indisponível.</p>
+      <button type="button" id="btn-retry" class="btn btn-primary">Tentar novamente</button>
+    </div>
+  </section>
+
   <!-- ============ LISTA DE FICHAS ============ -->
   <section id="view-list" class="view" hidden>
     <header class="topbar">
       <h1 class="topbar-title">Suas Fichas</h1>
       <div class="topbar-actions">
+        <span class="session-user" data-current-user></span>
+        <button type="button" class="btn btn-ghost" data-change-password>Minha senha</button>
         <button id="btn-admin" class="btn btn-ghost" hidden>Usuários</button>
         <button id="btn-new-sheet" class="btn btn-primary">+ Nova Ficha</button>
         <button id="btn-logout" class="btn btn-ghost">Sair</button>
@@ -49,7 +60,11 @@
     <header class="topbar">
       <button id="btn-admin-back" class="btn btn-ghost">← Fichas</button>
       <h1 class="topbar-title">Administração de usuários</h1>
-      <button id="btn-admin-logout" class="btn btn-ghost">Sair</button>
+      <div class="topbar-actions">
+        <span class="session-user" data-current-user></span>
+        <button type="button" class="btn btn-ghost" data-change-password>Minha senha</button>
+        <button id="btn-admin-logout" class="btn btn-ghost">Sair</button>
+      </div>
     </header>
     <main class="admin-wrap">
       <section class="panel admin-create">
@@ -75,6 +90,8 @@
       <button id="btn-back" class="btn btn-ghost" title="Voltar para a lista">← Fichas</button>
       <span id="save-status" class="save-status" data-state="saved">Salvo</span>
       <div class="topbar-actions">
+        <span class="session-user" data-current-user></span>
+        <button type="button" class="btn btn-ghost" data-change-password>Minha senha</button>
         <label class="auto-total-toggle" title="Somar automaticamente Ante. + Treino + Est/Atr">
           <input type="checkbox" id="auto-total" checked> Totais automáticos
         </label>
@@ -297,6 +314,28 @@
       </div>
       <div id="ability-catalog" class="ability-catalog"></div>
       <p id="ability-empty" class="picker-empty" hidden>Nenhuma habilidade encontrada.</p>
+    </form>
+  </dialog>
+
+  <dialog id="password-dialog" class="password-dialog" aria-labelledby="password-dialog-title">
+    <form id="password-form" class="password-shell">
+      <header class="password-header">
+        <div>
+          <span class="picker-kicker">Segurança da conta</span>
+          <h2 id="password-dialog-title">Alterar minha senha</h2>
+        </div>
+        <button type="button" class="picker-close" data-close-password aria-label="Fechar">×</button>
+      </header>
+      <div class="password-fields">
+        <label id="current-password-field" class="fld"><span>Senha atual</span><input id="current-password" type="password" autocomplete="current-password"></label>
+        <label class="fld"><span>Nova senha</span><input id="new-password" type="password" minlength="8" maxlength="200" autocomplete="new-password" required></label>
+        <label class="fld"><span>Confirmar nova senha</span><input id="confirm-password" type="password" minlength="8" maxlength="200" autocomplete="new-password" required></label>
+        <p id="password-message" class="admin-message" hidden></p>
+      </div>
+      <footer class="password-actions">
+        <button type="button" class="btn btn-ghost" data-close-password>Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar senha</button>
+      </footer>
     </form>
   </dialog>
 

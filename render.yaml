@@ -10,7 +10,7 @@ services:
     plan: free
     buildCommand: npm ci
     startCommand: npm start
-    healthCheckPath: /api/session
+    healthCheckPath: /api/health
     envVars:
       - key: NODE_VERSION
         value: "20"

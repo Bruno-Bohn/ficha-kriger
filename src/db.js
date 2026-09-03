@@ -25,11 +25,13 @@ export async function initDb() {
       password_hash TEXT NOT NULL,
       role          TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('admin', 'user')),
       active        BOOLEAN NOT NULL DEFAULT true,
+      session_version INTEGER NOT NULL DEFAULT 1,
       created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
       updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
     );
 
     CREATE UNIQUE INDEX IF NOT EXISTS users_username_lower_idx ON users (lower(username));
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS session_version INTEGER NOT NULL DEFAULT 1;
 
     CREATE TABLE IF NOT EXISTS sheets (
       id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),

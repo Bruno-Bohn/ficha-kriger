@@ -1,9 +1,9 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
-import crypto from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { pool, initDb } from './db.js';
+import { hashPassword, verifyPassword, signToken as createToken, verifyToken as readToken } from './auth.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -15,66 +15,54 @@ const IS_PROD = process.env.NODE_ENV === 'production' || !!process.env.RENDER;
 const SESSION_HOURS = 24 * 7; // sessao vale 7 dias
 const COOKIE_NAME = 'ficha_session';
 
-if (!APP_PASSWORD || !SESSION_SECRET) {
-  console.error('ERRO: defina APP_PASSWORD e SESSION_SECRET nas variaveis de ambiente.');
+if (!SESSION_SECRET) {
+  console.error('ERRO: defina SESSION_SECRET nas variaveis de ambiente.');
   process.exit(1);
 }
 
 const app = express();
 app.set('trust proxy', 1); // Render fica atras de proxy
+app.disable('x-powered-by');
+app.use((req, res, next) => {
+  res.set({
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'Referrer-Policy': 'same-origin',
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+    'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
+  });
+  next();
+});
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
+app.use('/api', (req, res, next) => {
+  if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) return next();
+  const origin = req.get('origin');
+  if (!origin) return next();
+  try {
+    if (new URL(origin).host === req.get('host')) return next();
+  } catch {}
+  res.status(403).json({ error: 'Origem da requisição não permitida' });
+});
 
 /* ---------------- Sessao (token HMAC assinado, sem estado no banco) ---------------- */
 
-function hashPassword(password) {
-  return new Promise((resolve, reject) => {
-    const salt = crypto.randomBytes(16);
-    crypto.scrypt(password, salt, 64, (err, key) => {
-      if (err) return reject(err);
-      resolve(`scrypt:${salt.toString('hex')}:${key.toString('hex')}`);
-    });
-  });
-}
-
-function verifyPassword(password, stored) {
-  return new Promise(resolve => {
-    const [algorithm, saltHex, keyHex] = String(stored || '').split(':');
-    if (algorithm !== 'scrypt' || !saltHex || !keyHex) return resolve(false);
-    const expected = Buffer.from(keyHex, 'hex');
-    crypto.scrypt(password, Buffer.from(saltHex, 'hex'), expected.length, (err, key) => {
-      resolve(!err && key.length === expected.length && crypto.timingSafeEqual(key, expected));
-    });
-  });
-}
-
 function signToken(user) {
-  const exp = Date.now() + SESSION_HOURS * 3600_000;
-  const payload = Buffer.from(JSON.stringify({ id: user.id, username: user.username, role: user.role, exp })).toString('base64url');
-  const sig = crypto.createHmac('sha256', SESSION_SECRET).update(payload).digest('hex');
-  return `${payload}.${sig}`;
+  return createToken(user, SESSION_SECRET, SESSION_HOURS);
 }
 
 function verifyToken(token) {
-  if (!token || typeof token !== 'string') return null;
-  const [payload, sig] = token.split('.');
-  if (!payload || !sig) return null;
-  const expected = crypto.createHmac('sha256', SESSION_SECRET).update(payload).digest('hex');
-  const a = Buffer.from(sig);
-  const b = Buffer.from(expected);
-  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
-  try {
-    const user = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
-    return user.id && user.exp > Date.now() ? user : null;
-  } catch { return null; }
+  return readToken(token, SESSION_SECRET);
 }
 
 async function requireAuth(req, res, next) {
   const user = verifyToken(req.cookies[COOKIE_NAME]);
   if (!user) return res.status(401).json({ error: 'Não autenticado' });
   try {
-    const { rows } = await pool.query('SELECT id, username, role FROM users WHERE id = $1 AND active = true', [user.id]);
-    if (!rows[0]) return res.status(401).json({ error: 'Conta desativada ou sessão inválida' });
+    const { rows } = await pool.query('SELECT id, username, role, session_version FROM users WHERE id = $1 AND active = true', [user.id]);
+    if (!rows[0] || rows[0].session_version !== user.version) {
+      return res.status(401).json({ error: 'Conta desativada ou sessão inválida' });
+    }
     req.user = rows[0];
     next();
   } catch (e) { next(e); }
@@ -96,6 +84,7 @@ function rateLimit(req, res, next) {
   const now = Date.now();
   let entry = attempts.get(ip);
   if (!entry || now > entry.resetAt) {
+    if (attempts.size >= 10_000) attempts.delete(attempts.keys().next().value);
     entry = { count: 0, resetAt: now + WINDOW_MS };
     attempts.set(ip, entry);
   }
@@ -106,6 +95,12 @@ function rateLimit(req, res, next) {
   next();
 }
 
+const attemptsCleanup = setInterval(() => {
+  const now = Date.now();
+  for (const [ip, entry] of attempts) if (now > entry.resetAt) attempts.delete(ip);
+}, WINDOW_MS);
+attemptsCleanup.unref();
+
 /* ---------------- Rotas de autenticacao ---------------- */
 
 app.post('/api/login', rateLimit, async (req, res, next) => {
@@ -113,11 +108,13 @@ app.post('/api/login', rateLimit, async (req, res, next) => {
     const username = String(req.body?.username ?? '').trim();
     const password = String(req.body?.password ?? '');
     const { rows } = await pool.query(
-      'SELECT id, username, password_hash, role, active FROM users WHERE lower(username) = lower($1)',
+      'SELECT id, username, password_hash, role, active, session_version FROM users WHERE lower(username) = lower($1)',
       [username]
     );
     const user = rows[0];
-    const ok = user?.active && await verifyPassword(password, user.password_hash);
+    const dummyHash = 'scrypt:00000000000000000000000000000000:' + '00'.repeat(64);
+    const passwordOk = await verifyPassword(password, user?.password_hash || dummyHash);
+    const ok = !!user?.active && passwordOk;
     if (!ok) return res.status(401).json({ error: 'Usuário ou senha incorretos' });
 
     attempts.delete(req.ip || 'desconhecido');
@@ -132,7 +129,7 @@ app.post('/api/login', rateLimit, async (req, res, next) => {
 });
 
 app.post('/api/logout', (req, res) => {
-  res.clearCookie(COOKIE_NAME);
+  res.clearCookie(COOKIE_NAME, { httpOnly: true, sameSite: 'lax', secure: IS_PROD });
   res.json({ ok: true });
 });
 
@@ -140,9 +137,10 @@ app.get('/api/session', async (req, res, next) => {
   const user = verifyToken(req.cookies[COOKIE_NAME]);
   if (!user) return res.json({ authenticated: false, user: null });
   try {
-    const { rows } = await pool.query('SELECT username, role FROM users WHERE id = $1 AND active = true', [user.id]);
+    const { rows } = await pool.query('SELECT username, role, session_version FROM users WHERE id = $1 AND active = true', [user.id]);
     const current = rows[0];
-    res.json({ authenticated: !!current, user: current || null });
+    const authenticated = !!current && current.session_version === user.version;
+    res.json({ authenticated, user: authenticated ? { username: current.username, role: current.role } : null });
   } catch (e) { next(e); }
 });
 
@@ -198,6 +196,7 @@ app.patch('/api/admin/users/:id', requireAuth, requireAdmin, async (req, res, ne
         return res.status(400).json({ error: 'A senha deve ter pelo menos 8 caracteres' });
       }
       values.push(await hashPassword(password)); updates.push(`password_hash = $${values.length}`);
+      updates.push('session_version = session_version + 1');
     }
     if (!updates.length) return res.status(400).json({ error: 'Nenhuma alteração informada' });
     values.push(req.params.id);
@@ -207,6 +206,30 @@ app.patch('/api/admin/users/:id', requireAuth, requireAdmin, async (req, res, ne
     );
     if (!rows[0]) return res.status(404).json({ error: 'Usuário não encontrado' });
     res.json(rows[0]);
+  } catch (e) { next(e); }
+});
+
+app.post('/api/account/password', requireAuth, async (req, res, next) => {
+  try {
+    const currentPassword = String(req.body?.currentPassword ?? '');
+    const newPassword = String(req.body?.newPassword ?? '');
+    if (newPassword.length < 8 || newPassword.length > 200) {
+      return res.status(400).json({ error: 'A nova senha deve ter pelo menos 8 caracteres' });
+    }
+    const { rows } = await pool.query('SELECT password_hash FROM users WHERE id = $1', [req.user.id]);
+    if (!await verifyPassword(currentPassword, rows[0]?.password_hash)) {
+      return res.status(400).json({ error: 'A senha atual está incorreta' });
+    }
+    const passwordHash = await hashPassword(newPassword);
+    const { rows: updated } = await pool.query(
+      `UPDATE users SET password_hash = $1, session_version = session_version + 1, updated_at = now()
+       WHERE id = $2 RETURNING id, username, role, session_version`,
+      [passwordHash, req.user.id]
+    );
+    res.cookie(COOKIE_NAME, signToken(updated[0]), {
+      httpOnly: true, sameSite: 'lax', secure: IS_PROD, maxAge: SESSION_HOURS * 3600_000,
+    });
+    res.json({ ok: true });
   } catch (e) { next(e); }
 });
 
@@ -274,6 +297,13 @@ app.delete('/api/sheets/:id', requireAuth, async (req, res, next) => {
 
 /* ---------------- Estaticos + erros ---------------- */
 
+app.get('/api/health', async (req, res, next) => {
+  try {
+    await pool.query('SELECT 1');
+    res.json({ ok: true });
+  } catch (e) { next(e); }
+});
+
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // UUID invalido no path do postgres cai aqui tambem
@@ -285,9 +315,10 @@ app.use((err, req, res, next) => {
 
 async function bootstrap() {
   await initDb();
-  let { rows } = await pool.query('SELECT id FROM users WHERE lower(username) = lower($1)', [ADMIN_USERNAME]);
+  let { rows } = await pool.query('SELECT id, role, active FROM users WHERE lower(username) = lower($1)', [ADMIN_USERNAME]);
   let adminId = rows[0]?.id;
   if (!adminId) {
+    if (!APP_PASSWORD) throw new Error('Defina APP_PASSWORD para criar o administrador inicial.');
     const passwordHash = await hashPassword(APP_PASSWORD);
     ({ rows } = await pool.query(
       `INSERT INTO users (username, password_hash, role) VALUES ($1, $2, 'admin') RETURNING id`,
@@ -295,8 +326,11 @@ async function bootstrap() {
     ));
     adminId = rows[0].id;
     console.log(`Administrador inicial criado: ${ADMIN_USERNAME}`);
+  } else if (rows[0].role !== 'admin' || !rows[0].active) {
+    await pool.query("UPDATE users SET role = 'admin', active = true, updated_at = now() WHERE id = $1", [adminId]);
   }
   await pool.query('UPDATE sheets SET owner_id = $1 WHERE owner_id IS NULL', [adminId]);
+  await pool.query('ALTER TABLE sheets ALTER COLUMN owner_id SET NOT NULL');
 }
 
 bootstrap()

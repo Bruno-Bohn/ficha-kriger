@@ -1,6 +1,6 @@
 /* ============================================================
    Ficha de Personagem — SPA
-   Fluxo: login (senha fixa) -> lista de fichas -> ficha (4 abas)
+   Fluxo: login -> lista de fichas -> ficha (4 abas)
    Todos os campos usam [data-f="chave"]; o estado e um objeto
    plano { chave: valor } salvo como JSONB no servidor.
    ============================================================ */
@@ -13,8 +13,10 @@
   let currentSheetId = null;
   let sheetData = {};        // dados da ficha aberta
   let saveTimer = null;
+  let activeSave = null;
   let dirty = false;
   let currentUser = null;
+  let passwordTargetId = null;
 
   const $ = (sel, el = document) => el.querySelector(sel);
   const $$ = (sel, el = document) => [...el.querySelectorAll(sel)];
@@ -24,6 +26,7 @@
     list: $('#view-list'),
     sheet: $('#view-sheet'),
     admin: $('#view-admin'),
+    error: $('#view-error'),
   };
 
   /* ---------------- API ---------------- */
@@ -35,6 +38,7 @@
       ...options,
     });
     if (res.status === 401 && path !== '/api/login') {
+      currentUser = null;
       showView('login');
       throw new Error('Não autenticado');
     }
@@ -55,14 +59,32 @@
     $('#loading').hidden = !on;
   }
 
+  function updateCurrentUserUI() {
+    $$('[data-current-user]').forEach(el => { el.textContent = currentUser?.username || ''; });
+    $('#btn-admin').hidden = currentUser?.role !== 'admin';
+  }
+
+  function showAppError(message) {
+    $('#app-error-message').textContent = message || 'O serviço está temporariamente indisponível.';
+    showView('error');
+  }
+
   async function route() {
     const hash = location.hash;
     const m = hash.match(/^#\/ficha\/([0-9a-f-]{36})$/i);
     try {
+      if (currentSheetId && m?.[1] !== currentSheetId) {
+        await flushSave();
+        if (dirty || activeSave) {
+          showAppError('Não foi possível salvar as últimas alterações. Tente novamente em alguns instantes.');
+          return;
+        }
+        currentSheetId = null;
+      }
       const { authenticated, user } = await api('/api/session');
       if (!authenticated) { showView('login'); return; }
       currentUser = user;
-      $('#btn-admin').hidden = user.role !== 'admin';
+      updateCurrentUserUI();
       if (hash === '#/admin') {
         if (user.role !== 'admin') { location.hash = ''; return; }
         await openAdmin();
@@ -73,8 +95,8 @@
       } else {
         await openList();
       }
-    } catch {
-      showView('login');
+    } catch (err) {
+      if (err.message !== 'Não autenticado') showAppError(err.message);
     }
   }
 
@@ -88,13 +110,15 @@
     btn.disabled = true;
     btn.textContent = 'Entrando...';
     try {
-      await api('/api/login', {
+      const result = await api('/api/login', {
         method: 'POST',
         body: JSON.stringify({
           username: $('#login-username').value,
           password: $('#login-password').value,
         }),
       });
+      currentUser = result.user;
+      updateCurrentUserUI();
       $('#login-password').value = '';
       location.hash = '';
       await openList();
@@ -108,13 +132,21 @@
   });
 
   async function logout() {
+    await flushSave();
+    if (dirty || activeSave) {
+      alert('Não foi possível salvar as últimas alterações. Tente sair novamente em alguns instantes.');
+      return;
+    }
     await api('/api/logout', { method: 'POST' }).catch(() => {});
+    currentUser = null;
+    currentSheetId = null;
     location.hash = '';
     showView('login');
   }
   $('#btn-logout').addEventListener('click', logout);
   $('#btn-logout-2').addEventListener('click', logout);
   $('#btn-admin-logout').addEventListener('click', logout);
+  $('#btn-retry').addEventListener('click', route);
 
   /* ---------------- Administração ---------------- */
 
@@ -131,7 +163,7 @@
           </div>
           <div class="admin-user-actions">
             ${user.role === 'admin' ? '<span class="admin-badge">Conta principal</span>' : `
-              <button type="button" class="btn btn-ghost" data-reset-password>Alterar senha</button>
+              <button type="button" class="btn btn-ghost" data-reset-password data-username="${escapeHtml(user.username)}">Alterar senha</button>
               <button type="button" class="btn ${user.active ? 'btn-danger' : 'btn-primary'}" data-toggle-user="${!user.active}">${user.active ? 'Desativar' : 'Reativar'}</button>`}
           </div>
         </article>`).join('');
@@ -183,14 +215,63 @@
         await openAdmin();
       }
       if (reset) {
-        const password = prompt('Digite a nova senha (mínimo de 8 caracteres):');
-        if (password === null) return;
-        await api(`/api/admin/users/${row.dataset.userId}`, {
-          method: 'PATCH', body: JSON.stringify({ password }),
-        });
-        alert('Senha alterada com sucesso.');
+        openPasswordDialog(row.dataset.userId, reset.dataset.username);
       }
     } catch (err) { alert(err.message); }
+  });
+
+  function openPasswordDialog(userId = null, username = '') {
+    passwordTargetId = userId;
+    $('#password-form').reset();
+    $('#password-message').hidden = true;
+    const ownPassword = !userId;
+    $('#password-dialog-title').textContent = ownPassword ? 'Alterar minha senha' : `Nova senha para ${username}`;
+    $('#current-password-field').hidden = !ownPassword;
+    $('#current-password').required = ownPassword;
+    $('#password-dialog').showModal();
+    setTimeout(() => $(ownPassword ? '#current-password' : '#new-password').focus(), 0);
+  }
+
+  $$('[data-change-password]').forEach(button => {
+    button.addEventListener('click', () => openPasswordDialog());
+  });
+  $$('[data-close-password]').forEach(button => {
+    button.addEventListener('click', () => $('#password-dialog').close());
+  });
+  $('#password-dialog').addEventListener('click', e => {
+    if (e.target === $('#password-dialog')) $('#password-dialog').close();
+  });
+  $('#password-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const newPassword = $('#new-password').value;
+    const message = $('#password-message');
+    const button = e.currentTarget.querySelector('[type="submit"]');
+    if (newPassword !== $('#confirm-password').value) {
+      message.textContent = 'As senhas não coincidem.';
+      message.dataset.state = 'error';
+      message.hidden = false;
+      return;
+    }
+    button.disabled = true;
+    message.hidden = true;
+    try {
+      if (passwordTargetId) {
+        await api(`/api/admin/users/${passwordTargetId}`, {
+          method: 'PATCH', body: JSON.stringify({ password: newPassword }),
+        });
+      } else {
+        await api('/api/account/password', {
+          method: 'POST',
+          body: JSON.stringify({ currentPassword: $('#current-password').value, newPassword }),
+        });
+      }
+      $('#password-dialog').close();
+      alert('Senha alterada com sucesso.');
+    } catch (err) {
+      message.textContent = err.message;
+      message.dataset.state = 'error';
+      message.hidden = false;
+    } finally { button.disabled = false; }
   });
 
   /* ---------------- Lista de fichas ---------------- */
@@ -577,14 +658,20 @@
   }
 
   async function saveNow() {
+    if (activeSave) {
+      try { await activeSave; } catch {}
+      if (dirty) return saveNow();
+      return;
+    }
     if (!currentSheetId || !dirty) return;
     dirty = false;
     setStatus('saving', 'Salvando...');
     try {
-      await api(`/api/sheets/${currentSheetId}`, {
+      activeSave = api(`/api/sheets/${currentSheetId}`, {
         method: 'PUT',
         body: JSON.stringify({ data: sheetData }),
       });
+      await activeSave;
       if (!dirty) setStatus('saved', 'Salvo');
     } catch (err) {
       if (err.message === 'Não autenticado') {
@@ -595,11 +682,17 @@
       setStatus('error', 'Erro ao salvar — tentando de novo...');
       clearTimeout(saveTimer);
       saveTimer = setTimeout(saveNow, 4000);
+    } finally {
+      activeSave = null;
     }
   }
 
   async function flushSave() {
     clearTimeout(saveTimer);
+    if (activeSave) {
+      try { await activeSave; } catch {}
+      activeSave = null;
+    }
     if (dirty) await saveNow();
   }
 
@@ -654,7 +747,6 @@
 
   const sheetView = views.sheet;
   sheetView.addEventListener('input', onFieldInput);
-  sheetView.addEventListener('change', onFieldInput);
   sheetView.addEventListener('click', onToggleClick);
 
   window.addEventListener('hashchange', route);
