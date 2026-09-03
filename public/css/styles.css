@@ -342,6 +342,32 @@ select { cursor: pointer; }
 .identity-grid .fld-lg { grid-column: 1 / -1; }
 .identity-grid .fld-lg input { font-size: 1.3rem; font-family: "Cinzel", serif; font-weight: 600; }
 
+.background-overview {
+  margin-top: 14px;
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  background: rgba(122, 47, 47, .035);
+  overflow: hidden;
+}
+.background-overview summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-family: "Cinzel", serif;
+  font-size: .75rem;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+.background-overview summary strong { color: var(--accent); }
+.background-detail-content { padding: 12px; border-top: 1px solid var(--line-soft); }
+.background-detail-content p { margin: 0 0 12px; }
+.background-detail-content dl { margin: 0; display: grid; gap: 8px; }
+.background-detail-content dl div { display: grid; grid-template-columns: minmax(120px, .35fr) 1fr; gap: 10px; }
+.background-detail-content dt { color: var(--ink-soft); font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; }
+.background-detail-content dd { margin: 0; font-weight: 600; }
+
 /* ---------------- Atributos (losangos) ---------------- */
 
 .attrs {
@@ -372,18 +398,55 @@ select { cursor: pointer; }
   width: 66px;
   padding: 0;
 }
-.attr-temp {
-  display: flex; align-items: center; gap: 4px;
+.attr-modifiers {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.attr-modifiers label {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
   font-size: .68rem; text-transform: uppercase; letter-spacing: .06em;
   color: var(--ink-soft);
 }
-.attr-temp input {
+.attr-modifiers input {
   width: 44px;
   text-align: center;
   border: 1.5px solid var(--line);
   border-radius: 6px;
   padding: 2px;
 }
+.attr-advantage {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 5px;
+  padding: 2px 5px;
+  color: var(--ink-soft);
+  background: transparent;
+  border: 0;
+  border-radius: 5px;
+  font-family: inherit;
+  font-size: .65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  cursor: pointer;
+}
+.attr-advantage > span {
+  width: 14px;
+  height: 14px;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--line);
+  border-radius: 3px;
+  background: rgba(255,255,255,.4);
+}
+.attr-advantage[aria-pressed="true"] { color: var(--accent); }
+.attr-advantage[aria-pressed="true"] > span {
+  color: var(--panel);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.attr-advantage[aria-pressed="true"] > span::after { content: "✓"; font-size: .68rem; line-height: 1; }
+.attr-advantage:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* ---------------- PV/PM/Alma ---------------- */
 
@@ -561,6 +624,26 @@ select { cursor: pointer; }
 /* ---------------- Cards (habilidades / magias) ---------------- */
 
 .cards-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+
+.lineage-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 8px 0 16px;
+}
+.lineage-heading .page-title { margin: 0 0 4px; text-align: left; }
+.lineage-name { width: min(320px, 100%); flex: 0 0 auto; }
+.lineage-name input { font-family: "Cinzel", serif; font-weight: 700; }
+.lineage-notes { margin-bottom: 22px; }
+.lineage-notes textarea { min-height: 110px; }
+.lineage-abilities-title {
+  margin: 0 0 12px;
+  color: var(--accent);
+  font-size: .9rem;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
 
 .path-overview {
   margin: 8px 0 24px;
@@ -787,8 +870,8 @@ select { cursor: pointer; }
 }
 
 @media (max-width: 680px) {
-  .path-heading { align-items: stretch; flex-direction: column; }
-  .path-heading .btn { width: 100%; }
+  .path-heading, .lineage-heading { align-items: stretch; flex-direction: column; }
+  .path-heading .btn, .lineage-name { width: 100%; }
   .picker-toolbar, .ability-catalog { grid-template-columns: 1fr; }
   .ability-picker { width: calc(100% - 12px); max-height: 94dvh; }
   .picker-header, .picker-toolbar, .ability-catalog { padding-left: 14px; padding-right: 14px; }

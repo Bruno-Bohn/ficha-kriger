@@ -373,6 +373,24 @@
     ['alcance', 'Alcance'], ['duracao', 'Duração'],
   ];
 
+  const BACKGROUNDS = {
+    'Acólito': { riqueza: '2 Moedas de Riqueza', pericias: 'Percepção, Performance, História, Intuição, Investigação, Medicina, Natureza, Persuasão, Religião e Ocultismo.', descricao: 'Crescido entre templos, doutrinas e rituais, o Acólito aprende sobre fé, tradições sagradas e convivência comunitária. Familiarizado com hierarquias religiosas e cerimônias, ele é visto como alguém de sabedoria espiritual e respeito social.' },
+    'Artesão': { riqueza: '3 Moedas de Riqueza', pericias: 'Atletismo, Prestidigitação, Arcanismo, Ciência Mágica, Intuição, Investigação, Mecânica, Natureza, Persuasão e Sobrevivência.', descricao: 'Moldado pelo ofício e pela prática contínua, o Artesão domina técnicas refinadas e conhecimento prático. Seja na forja, no trabalho com madeira ou na mecânica, sua habilidade é reconhecida e valorizada.' },
+    'Artista': { riqueza: '2 Moedas de Riqueza', pericias: 'Acrobacia, Furtividade, Percepção, Prestidigitação, Enganação, Performance, História, Intimidação, Intuição e Persuasão.', descricao: 'Vivendo da expressão e criatividade, o Artista encanta, provoca emoções e inspira plateias. Seu talento abre portas e proporciona contato com diversos círculos sociais.' },
+    'Comerciante': { riqueza: '3 Moedas de Riqueza', pericias: 'Percepção, Arcanismo, Enganação, Ciência Mágica, História, Intuição, Investigação, Mecânica, Persuasão e Natureza.', descricao: 'Acostumado a negociar e avaliar valores, o Comerciante domina a arte do trato social e a leitura de intenções. Ele enxerga oportunidades onde outros veem apenas mercadoria.' },
+    'Estudioso': { riqueza: '3 Moedas de Riqueza', pericias: 'Percepção, Arcanismo, Ciência Mágica, História, Investigação, Lidar c/ Animais, Mecânica, Medicina, Natureza e Religião.', descricao: 'Dedicado ao conhecimento, o Estudioso cresceu cercado por livros, experimentos e mestres rigorosos. Sua mente analítica e curiosidade constante o tornam um aliado indispensável.' },
+    'Fora da Lei': { riqueza: '2 Moedas de Riqueza', pericias: 'Acrobacia, Furtividade, Percepção, Prestidigitação, Enganação, Intimidação, Intuição, Investigação, Persuasão e Sobrevivência.', descricao: 'Vivendo à margem das leis, o Fora da Lei aprendeu a confiar na astúcia e na velocidade. Suas experiências moldaram um espírito resistente e desconfiado.' },
+    'Herói do Povo': { riqueza: '2 Moedas de Riqueza', pericias: 'Atletismo, Furtividade, Percepção, Intimidação, Intuição, Lidar c/ Animais, Medicina, Montaria, Persuasão e Sobrevivência.', descricao: 'Crescido entre trabalhadores, o Herói do Povo é admirado por sua coragem e senso de justiça. Ele luta pelos mais fracos e inspira aqueles que o cercam.' },
+    'Marinheiro': { riqueza: '2 Moedas de Riqueza', pericias: 'Acrobacia, Atletismo, Percepção, Prestidigitação, Performance, Intimidação, Mecânica, Montaria, Natureza e Sobrevivência.', descricao: 'Vivendo sob o vento e as ondas, o Marinheiro conhece os perigos do mar e o trabalho em equipe. Sua vida é guiada pelo ritmo das marés e pela coragem.' },
+    'Mercenário': { riqueza: '2 Moedas de Riqueza', pericias: 'Furtividade, Percepção, Enganação, História, Intimidação, Intuição, Investigação, Prestidigitação, Natureza e Sobrevivência.', descricao: 'Treinado para sobreviver em qualquer campo de batalha, o Mercenário luta por contrato e oportunidade. Sua experiência o tornou eficiente, pragmático e endurecido.' },
+    'Militar': { riqueza: '3 Moedas de Riqueza', pericias: 'Acrobacia, Atletismo, Furtividade, Percepção, Intimidação, Intuição, Lidar c/ Animais, Medicina, Montaria e Sobrevivência.', descricao: 'Criado na disciplina e no rigor, o Militar é preparado para obedecer, liderar e sobreviver. O treinamento constante moldou seu físico e sua determinação.' },
+    'Monge': { riqueza: '1 Moeda de Riqueza', pericias: 'Acrobacia, Furtividade, Percepção, História, Intuição, Medicina, Natureza, Persuasão, Religião e Sobrevivência.', descricao: 'Dedicado à disciplina espiritual e corporal, o Monge vive entre meditação, treino e estudo. Seu caminho busca equilíbrio, sabedoria e autocontrole.' },
+    'Nobre': { riqueza: '4 Moedas de Riqueza', pericias: 'Percepção, Arcanismo, Enganação, Performance, Ciência Mágica, História, Intuição, Montaria, Persuasão e Religião.', descricao: 'Criado entre luxos e responsabilidades, o Nobre recebeu educação rígida e influência social. Ele conhece intrigas políticas e domina a etiqueta.' },
+    'Trabalhador': { riqueza: '1 Moeda de Riqueza', pericias: 'Atletismo, Prestidigitação, Ciência Mágica, Investigação, Lidar c/ Animais, Mecânica, Montaria, Natureza, Persuasão e Sobrevivência.', descricao: 'Habituado ao esforço diário, o Trabalhador se destaca pela resistência e adaptabilidade. Seu dia a dia o ensinou a improvisar e resolver problemas rapidamente.' },
+    'Tribal': { riqueza: '1 Moeda de Riqueza', pericias: 'Atletismo, Furtividade, Percepção, Intuição, Lidar c/ Animais, Medicina, Montaria, Natureza, Sobrevivência e Ocultismo.', descricao: 'Crescido em comunidade selvagem ou isolada, o Tribal vive em sintonia com o ambiente. Seus costumes valorizam a força coletiva e o respeito ancestral.' },
+    'Viajante': { riqueza: '2 Moedas de Riqueza', pericias: 'Percepção, História, Intuição, Lidar c/ Animais, Medicina, Montaria, Natureza, Persuasão, Sobrevivência e Ocultismo.', descricao: 'Sempre na estrada, o Viajante acumulou histórias, culturas e truques de sobrevivência. Adaptável e atento, ele sabe identificar perigos e oportunidades.' },
+  };
+
   const CLERIC_ABILITIES = [
     { nivel: '1', nome: 'Conjurador Iniciante', tipo: 'Passiva', gasto: 'Nulo', acao: 'Livre', alcance: 'Pessoal', duracao: 'Constante', descricao: 'Quando utilizar uma habilidade considerada magia, recebe um bônus adicional de +1 nos testes de Acerto e CD das magias.' },
     { nivel: '1', nome: 'S/ Curandeiro', tipo: 'Passiva', gasto: 'Nulo', acao: 'Livre', alcance: 'Pessoal', duracao: 'Constante', descricao: 'Suas magias de cura agora somam seu Espírito no total também.' },
@@ -504,7 +522,13 @@
       <div class="attr">
         <span class="attr-name">${a.label}</span>
         <div class="attr-diamond"><input data-f="attr.${a.key}" inputmode="numeric"></div>
-        <label class="attr-temp">Temp <input data-f="attr.${a.key}.temp" inputmode="numeric"></label>
+        <div class="attr-modifiers">
+          <label>Temp. <input data-f="attr.${a.key}.temp" inputmode="numeric" aria-label="${a.label}: temporário"></label>
+          <label>Bônus <input data-f="attr.${a.key}.bonus" inputmode="numeric" aria-label="${a.label}: bônus"></label>
+        </div>
+        <button type="button" class="attr-advantage" data-t="attr.${a.key}.vantagem" aria-pressed="false" aria-label="Marcar vantagem em ${a.label}">
+          <span aria-hidden="true"></span>Vantagem
+        </button>
       </div>`).join('');
 
     // Pontos de Alma (5 losangos clicaveis)
@@ -569,6 +593,18 @@
           ).join('')}
         </div>
         <textarea data-f="hab.${i}.descricao" rows="3" placeholder="Descrição..."></textarea>
+      </div>`).join('');
+
+    // Habilidades da Linhagem (livres, sem catálogo ou ligação com o Caminho)
+    $('#linhagem-habilidades').innerHTML = Array.from({ length: 8 }, (_, i) => `
+      <div class="ability-card">
+        <label class="fld card-head"><span>Nome</span><input data-f="linhagem.hab.${i}.nome"></label>
+        <div class="card-fields">
+          ${ABILITY_FIELDS.map(([k, lbl]) =>
+            `<label class="fld"><span>${lbl}</span><input data-f="linhagem.hab.${i}.${k}"></label>`
+          ).join('')}
+        </div>
+        <textarea data-f="linhagem.hab.${i}.descricao" rows="3" placeholder="Descrição..."></textarea>
       </div>`).join('');
 
     // Magias (6 cards)
@@ -639,6 +675,22 @@
       ? `Preencha manualmente ou escolha uma habilidade pronta do catálogo do ${path}.`
       : 'Selecione um Caminho na ficha para acessar seu catálogo.';
     renderPathDetails();
+  }
+
+  function renderBackgroundDetails() {
+    const name = sheetData.antecedente;
+    const detail = BACKGROUNDS[name];
+    const overview = $('#background-overview');
+    overview.hidden = !detail;
+    if (!detail) return;
+
+    $('#background-detail-name').textContent = name;
+    $('#background-detail-content').innerHTML = `
+      <p>${escapeHtml(detail.descricao)}</p>
+      <dl>
+        <div><dt>Riqueza inicial</dt><dd>${escapeHtml(detail.riqueza)}</dd></div>
+        <div><dt>Perícias disponíveis</dt><dd>${escapeHtml(detail.pericias)}</dd></div>
+      </dl>`;
   }
 
   function renderAbilityCatalog() {
@@ -715,6 +767,13 @@
   /* ---------------- Binding de dados ---------------- */
 
   function fillForm() {
+    const selectedBackground = sheetData.antecedente;
+    const backgroundSelect = $('#antecedente-select');
+    const hasBackgroundOption = Array.from(backgroundSelect.options)
+      .some(option => option.value === selectedBackground);
+    if (selectedBackground && !hasBackgroundOption) {
+      backgroundSelect.add(new Option(`${selectedBackground} (anterior)`, selectedBackground));
+    }
     $$('[data-f]').forEach(el => {
       el.value = sheetData[el.dataset.f] ?? '';
     });
@@ -724,13 +783,18 @@
     applyAutoTotalMode();
     recalcAllTotals();
     updatePathUI();
+    renderBackgroundDetails();
   }
 
   function onFieldInput(e) {
     const el = e.target;
     if (!el.dataset.f) return;
     sheetData[el.dataset.f] = el.value;
+    $$(`[data-f="${el.dataset.f}"]`).forEach(peer => {
+      if (peer !== el) peer.value = el.value;
+    });
     if (el.dataset.f === 'caminho') updatePathUI();
+    if (el.dataset.f === 'antecedente') renderBackgroundDetails();
     if (/^pericia\..+\.(ante|treino|estatr)$/.test(el.dataset.f)) {
       recalcTotal(el.closest('.skill-row'));
     }

@@ -102,6 +102,7 @@
     <nav class="tabs" id="tabs">
       <button class="tab active" data-tab="tab-ficha">Ficha</button>
       <button class="tab" data-tab="tab-recursos">Inventário &amp; Detalhes</button>
+      <button class="tab" data-tab="tab-linhagem">Linhagem</button>
       <button class="tab" data-tab="tab-caminho">Caminho</button>
       <button class="tab" data-tab="tab-magias">Magias</button>
     </nav>
@@ -124,9 +125,32 @@
                   <option value="Lutador">Lutador</option>
                 </select>
               </label>
-              <label class="fld"><span>Antecedente</span><input data-f="antecedente"></label>
+              <label class="fld"><span>Antecedente</span>
+                <select data-f="antecedente" id="antecedente-select">
+                  <option value="">Selecione...</option>
+                  <option value="Acólito">Acólito</option>
+                  <option value="Artesão">Artesão</option>
+                  <option value="Artista">Artista</option>
+                  <option value="Comerciante">Comerciante</option>
+                  <option value="Estudioso">Estudioso</option>
+                  <option value="Fora da Lei">Fora da Lei</option>
+                  <option value="Herói do Povo">Herói do Povo</option>
+                  <option value="Marinheiro">Marinheiro</option>
+                  <option value="Mercenário">Mercenário</option>
+                  <option value="Militar">Militar</option>
+                  <option value="Monge">Monge</option>
+                  <option value="Nobre">Nobre</option>
+                  <option value="Trabalhador">Trabalhador</option>
+                  <option value="Tribal">Tribal</option>
+                  <option value="Viajante">Viajante</option>
+                </select>
+              </label>
               <label class="fld fld-sm"><span>Nível</span><input data-f="nivel" inputmode="numeric"></label>
             </div>
+            <details id="background-overview" class="background-overview" hidden>
+              <summary><span>Consultar antecedente</span><strong id="background-detail-name"></strong></summary>
+              <div id="background-detail-content" class="background-detail-content"></div>
+            </details>
           </section>
 
           <!-- Atributos -->
@@ -272,7 +296,23 @@
         </div>
       </div>
 
-      <!-- ==================== ABA 3: CAMINHO ==================== -->
+      <!-- ==================== ABA 3: LINHAGEM ==================== -->
+      <div class="tabpane" id="tab-linhagem">
+        <div class="lineage-heading">
+          <div>
+            <h2 class="page-title">◇ Linhagem ◇</h2>
+            <p class="path-helper">Registre livremente a origem e as características da sua linhagem.</p>
+          </div>
+          <label class="fld lineage-name"><span>Nome da Linhagem</span><input data-f="linhagem" placeholder="Ex.: Humano"></label>
+        </div>
+        <section class="panel lineage-notes">
+          <label class="fld fld-block"><span>Anotações da Linhagem</span><textarea data-f="linhagem.notas" rows="5" placeholder="Origem, aparência, cultura, traços e outras informações..."></textarea></label>
+        </section>
+        <h3 class="lineage-abilities-title">Habilidades da Linhagem</h3>
+        <div class="cards-grid" id="linhagem-habilidades"></div>
+      </div>
+
+      <!-- ==================== ABA 4: CAMINHO ==================== -->
       <div class="tabpane" id="tab-caminho">
         <section id="path-overview" class="path-overview" hidden>
           <details open>
@@ -293,7 +333,7 @@
         <div class="cards-grid" id="habilidades"></div>
       </div>
 
-      <!-- ==================== ABA 4: MAGIAS ==================== -->
+      <!-- ==================== ABA 5: MAGIAS ==================== -->
       <div class="tabpane" id="tab-magias">
         <h2 class="page-title">✶ Magias ✶</h2>
         <div class="magic-stats">
