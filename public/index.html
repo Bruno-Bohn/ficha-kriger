@@ -121,6 +121,7 @@
                 <select data-f="caminho" id="caminho-select">
                   <option value="">Selecione...</option>
                   <option value="Clérigo">Clérigo</option>
+                  <option value="Lutador">Lutador</option>
                 </select>
               </label>
               <label class="fld"><span>Antecedente</span><input data-f="antecedente"></label>
@@ -273,6 +274,15 @@
 
       <!-- ==================== ABA 3: CAMINHO ==================== -->
       <div class="tabpane" id="tab-caminho">
+        <section id="path-overview" class="path-overview" hidden>
+          <details open>
+            <summary>
+              <span>Detalhes do Caminho</span>
+              <strong id="path-detail-name"></strong>
+            </summary>
+            <div id="path-detail-content" class="path-detail-content"></div>
+          </details>
+        </section>
         <div class="path-heading">
           <div>
             <h2 class="page-title">❖ Habilidades do Caminho ❖</h2>
@@ -302,7 +312,7 @@
     <form method="dialog" class="picker-shell">
       <header class="picker-header">
         <div>
-          <span class="picker-kicker">Caminho do Clérigo</span>
+          <span id="ability-picker-path" class="picker-kicker">Caminho</span>
           <h2 id="ability-picker-title">Escolha uma habilidade</h2>
           <p>Consulte os detalhes e adicione a habilidade diretamente à ficha.</p>
         </div>

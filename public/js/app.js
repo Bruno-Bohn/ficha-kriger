@@ -403,6 +403,101 @@
     { nivel: 'restrita', nome: 'Consagrar Terreno / Sacerdote', tipo: 'Restrita', gasto: 'Nulo', acao: 'Livre', alcance: 'Longo', duracao: '5 turnos', descricao: 'Magias divinas têm vantagem e todas as magias de cura dentro da área recuperam automaticamente o valor máximo possível.' },
   ];
 
+  const FIGHTER_ABILITIES = [
+    { nivel: '1', nome: 'Ataques Desarmados', tipo: 'Passiva', gasto: 'Nulo', acao: 'Livre', alcance: 'Pessoal', duracao: 'Constante', descricao: 'Seus Ataques Desarmados agora causam 1d4 + Atributo de dano e são considerados armas leves.' },
+    { nivel: '1', nome: 'Combate com duas Armas', tipo: 'Passiva', gasto: 'Nada', acao: 'Livre', alcance: 'Pessoal', duracao: 'Livre', descricao: 'Quando estiver utilizando duas armas, pode adicionar o bônus de acerto em ambos os ataques.' },
+    { nivel: '1', nome: 'Rajada de Golpes', tipo: 'Ativa', gasto: '1 PM', acao: 'Uma', alcance: 'Pessoal', duracao: 'Uso', descricao: 'Utilize sua ação para realizar dois ataques em sequência contra o mesmo alvo; esse segundo ataque não possui desvantagem alguma.' },
+    { nivel: '1', nome: 'Armadura Natural', tipo: 'Passiva', gasto: 'Nulo', acao: 'Livre', alcance: 'Pessoal', duracao: 'Constante', descricao: 'Enquanto não estiver vestindo nenhuma armadura, sua CA se torna 10 + Agilidade + Atributo dos Ataques.' },
+    { nivel: '1', nome: 'Desviar Projétil', tipo: 'Ativa', gasto: '1 PM', acao: 'Uma, Reação', alcance: 'Pessoal', duracao: 'Uso', descricao: 'Quando for atingido por um projétil, pode diminuir o dano em 1d10 + Agilidade.' },
+    { nivel: '1', nome: 'Pés Ágeis', tipo: 'Passiva', gasto: 'Nulo', acao: 'Livre', alcance: 'Pessoal', duracao: 'Constante', descricao: 'Sua agilidade natural aumenta seu deslocamento em +1Q.' },
+    { nivel: '1', nome: 'Guarda Alta', tipo: 'Ativa', gasto: '1 PM', acao: 'Uma', alcance: 'Pessoal', duracao: 'Turno', descricao: 'Você ergue sua guarda; todos os ataques contra você até o início do próximo turno têm desvantagem.' },
+    { nivel: '1', nome: 'Rápido como o Vento', tipo: 'Ativa', gasto: '1 PM', acao: 'Livre', alcance: 'Pessoal', duracao: 'Uso', descricao: 'Você pode se locomover 2Q a mais com suas ações neste turno.' },
+    { nivel: '1', nome: 'PE / Incendiar Mãos', tipo: 'Ativa', gasto: '1 PM', acao: 'Uma', alcance: 'Curto', duracao: '5 turnos', descricao: 'Seus ataques passam a causar dano de fogo em vez do padrão, e você pode arremessar socos de fogo a curta distância usando o acerto de habilidades, causando o mesmo dano do seu soco normal.' },
+    { nivel: '1', nome: 'PE / Chicote Elétrico', tipo: 'Ativa', gasto: '2 PM', acao: 'Duas', alcance: 'Curto', duracao: 'Uso', descricao: 'Você molda a mana em eletricidade, criando um chicote energético que causa 2d8 + Atributo de Ataque de dano elétrico. O alvo deve realizar um teste de Força, sendo puxado em sua direção em caso de falha.' },
+    { nivel: '1', nome: 'AM / Rasteira', tipo: 'Ativa', gasto: '1 PM', acao: 'Uma', alcance: 'Pessoal', duracao: 'Uso', descricao: 'Ao acertar um ataque normal, você realiza uma manobra para derrubar o alvo. Ele deve fazer um teste de Agilidade para evitar cair.' },
+    { nivel: '1', nome: 'AM / Concentração Marcial', tipo: 'Ativa', gasto: '1 PM', acao: 'Uma', alcance: 'Pessoal', duracao: '1 turno', descricao: 'Durante o combate, você entra em profundo foco, recebendo +2 nos Acertos até o final do turno.' },
+    { nivel: '1', nome: 'MK / Ataque Energizado', tipo: 'Ativa', gasto: '1 PM', acao: 'Livre', alcance: 'Pessoal', duracao: 'Uso', descricao: 'Você concentra energia no seu ataque, fazendo com que o próximo soco cause +1d4 de dano de Energia.' },
+    { nivel: '1', nome: 'MK / Revigorar-se', tipo: 'Ativa', gasto: 'Moldável', acao: 'Uma', alcance: 'Pessoal', duracao: 'Uso', descricao: 'Através da força espiritual, você converte mana diretamente em vitalidade, curando 1d4 PVs por ponto de mana gasto, somando seu atributo de Vigor uma única vez.' },
+    { nivel: '2', nome: 'AM / Imobilizador', tipo: 'Passiva', gasto: 'Nulo', acao: 'Livre', alcance: 'Corporal', duracao: 'Constante', descricao: 'Você é muito bom em combate agarrado, recebendo +2 nos testes de Atletismo ao agarrar ou imobilizar um alvo.' },
+    { nivel: '2', nome: 'MK / Escudo de Ki', tipo: 'Ativa', gasto: '1 PM', acao: 'Reação', alcance: 'Pessoal', duracao: 'Turno', descricao: 'Você molda sua energia espiritual para criar uma barreira que concede +2 de CA até o início do seu próximo turno.' },
+    { nivel: '2', nome: 'MK / Queda Suave', tipo: 'Passiva', gasto: 'Nulo', acao: 'Livre', alcance: 'Pessoal', duracao: 'Constante', descricao: 'Ao cair de até 10 metros, você usa sua força espiritual para anular completamente o dano de queda.' },
+    { nivel: '2', nome: 'PE / Golpe de Lufada', tipo: 'Ativa', gasto: '1 PM', acao: 'Livre', alcance: 'Pessoal', duracao: 'Uso', descricao: 'Seu próximo ataque bem-sucedido é imbuído com vento. O alvo deve fazer um teste de Força ou será empurrado até 3Q.' },
+    { nivel: '2', nome: 'PE / Rajada Flamejante', tipo: 'Ativa', gasto: '2 PM', acao: 'Padrão', alcance: 'Corporal', duracao: 'Uso', descricao: 'Você desfere uma sequência de socos flamejantes que explodem em um cone de 3Q à sua frente. Criaturas na área devem realizar teste de Agilidade, recebendo metade do dano no sucesso. O dano total é 3d6 de Fogo.' },
+    { nivel: '3', nome: 'Pés Ágeis 2', requisito: 'Pés Ágeis', tipo: 'Refino', gasto: 'Nulo', acao: 'Livre', alcance: 'Pessoal', duracao: 'Constante', descricao: 'Seu domínio corporal aumenta ainda mais sua velocidade, ampliando seu deslocamento em +2Q.' },
+    { nivel: '3', nome: 'PE / Impacto Rochoso', tipo: 'Ativa', gasto: '2 PM', acao: 'Padrão', alcance: 'Corporal', duracao: 'Uso', descricao: 'Você golpeia o solo liberando uma onda sísmica que atinge todos os quadrados adjacentes, causando 2d8 + Atributo de Ataque de dano contundente. Criaturas atingidas devem fazer teste de Força, recebendo metade do dano em caso de sucesso.' },
+    { nivel: '3', nome: 'AM / Contrapeso', tipo: 'Passiva', gasto: 'Nulo', acao: 'Reação', alcance: 'Corporal', duracao: 'Constante', descricao: 'Quando um inimigo erra um ataque corpo a corpo contra você, seus reflexos respondem instantaneamente, permitindo realizar um ataque normal como reação.' },
+    { nivel: '3', nome: 'AM / Protegesse', tipo: 'Ativa', gasto: '2 PM / 3 PM', acao: 'Movimento / Livre', alcance: 'Pessoal', duracao: '3 turnos', descricao: 'Seus instintos se intensificam e sua postura defensiva se firma, aumentando sua CA em +3 durante 3 turnos.' },
+    { nivel: '3', nome: 'MK / Disparo de Energia', tipo: 'Ativa', gasto: '3 PM', acao: 'Padrão', alcance: 'Médio', duracao: 'Uso', descricao: 'Você dispara uma poderosa rajada de energia concentrada de suas mãos, causando 4d6 de dano de energia ao alvo atingido.' },
+    { nivel: 'restrita', nome: 'Ataques Vitais / Artista Marcial', tipo: 'Restrita', gasto: 'Nulo', acao: 'Livre', alcance: 'Pessoal', duracao: '1 turno', descricao: 'Durante esse turno todos os seus ataques se tornam críticos naturais ao rolar 16 ou mais. Todos os pontos vitais do inimigo parecem expostos, dando-lhe a chance perfeita de causar dano máximo.' },
+    { nivel: 'restrita', nome: 'Fúria Elemental / Punho Elemental', tipo: 'Restrita', gasto: 'Nulo', acao: 'Livre', alcance: 'Pessoal', duracao: '5 turnos', descricao: 'Você entra em um estado de controle absoluto dos elementos. Durante a duração, pode converter seu dano físico em elemental ou vice-versa. Além disso, habilidades do Punho Elemental que custam 2 PM ou mais passam a custar 1 PM a menos.' },
+    { nivel: 'restrita', nome: 'Golpe Divergente / Mestre do Ki', tipo: 'Restrita', gasto: 'Nulo', acao: 'Padrão', alcance: 'Corporal', duracao: 'Uso', descricao: 'Você realiza uma enxurrada de golpes, continuando a atacar até errar. Cada acerto causa 2d6 de dano; em caso de crítico, apenas aquele ataque é maximizado. As três primeiras rolagens possuem vantagem.' },
+  ];
+
+  const PATH_ABILITIES = {
+    'Clérigo': CLERIC_ABILITIES,
+    'Lutador': FIGHTER_ABILITIES,
+  };
+
+  const PATH_DETAILS = {
+    'Clérigo': {
+      descricao: [
+        'Um excelente suporte e guerreiro, fiel às suas crenças e à sua ligação com o divino.',
+        'Os Clérigos são a ponte entre os mortais e o divino, guerreiros da fé que canalizam o poder dos deuses através de suas preces. Servem como faróis de esperança para seus aliados e como sentença inevitável para os ímpios.',
+        'A força de um Clérigo não vem apenas de armas ou armaduras, mas de suas preces e crença. Através da devoção, são capazes de curar ferimentos, abençoar companheiros, expulsar criaturas profanas e invocar milagres.',
+        'Dentro desse Caminho, duas ramificações se destacam: o Cruzado, um guerreiro sagrado que empunha a fé como arma; e o Sacerdote, guardião espiritual que sustenta seus aliados com bênçãos e magias restauradoras.',
+        'Apesar de suas diferenças, ambos compartilham o mesmo destino: servir como instrumentos vivos da vontade divina, seja defendendo templos, conduzindo exorcismos ou liderando aliados sob a luz da fé.',
+      ],
+      atributo: 'Espírito',
+      pv: { inicial: '10 + 2d4 + Vigor', seguintes: '2d4 + Vigor' },
+      pm: { inicial: 'Mana Natural + 5', seguintes: '5' },
+      maestrias: [
+        ['Resistências', 'Espírito e Vigor'],
+        ['Armaduras', 'Armaduras leves e médias, escudos'],
+        ['Armas', '2 Grupos'],
+        ['Magias', '1 Origem'],
+      ],
+      treinamento: 'História, Intuição, Medicina, Montaria, Natureza, Ocultismo, Percepção, Persuasão, Religião e Sobrevivência.',
+      progressao: [
+        ['1º', '+2', '+4', '+5', '7'], ['2º', '+2', '+2', '0', '5'],
+        ['3º', '+2', '0', '+3', '5'], ['4º', '+3', '+4', '0', '5'],
+        ['5º', '+3', '0', '+5', '5'], ['6º', '+3', '+4', '0', '5'],
+        ['7º', '+4', '0', '+5', '5'], ['8º', '+4', '+4', '0', '5'],
+      ],
+      ramificacoes: [
+        ['Cruzado', 'O braço armado do Clérigo, que transforma orações em aço e convicção em chama. Marcha à frente dos aliados e usa lâmina e escudo para protegê-los e abençoá-los.'],
+        ['Sacerdote', 'O braço de bênçãos e cura do Clérigo. Leva a luz divina ao campo de batalha, cura os feridos, protege os incapacitados e manifesta a vontade de seu deus.'],
+      ],
+    },
+    'Lutador': {
+      descricao: [
+        'O Lutador é a personificação da força física, da disciplina e da determinação inabalável. Ele não precisa de armaduras pesadas ou armas elaboradas: seu corpo é sua arma, sua mente é seu escudo e sua vontade é seu combustível.',
+        'Forjado por treinos árduos, suor e repetição incansável, o Lutador enfrenta o mundo com punhos firmes e uma vontade inabalável.',
+        'Esse Caminho representa aqueles que buscaram a perfeição corporal, seja por necessidade, filosofia, vingança ou tradição. Seus golpes carregam não apenas técnica, mas história e propósito.',
+        'As ramificações do Lutador mostram como diferentes guerreiros canalizam sua força, transformando o combate desarmado em uma verdadeira arte.',
+      ],
+      atributo: 'Força, Agilidade ou Espírito',
+      pv: { inicial: '10 + 1d6 + 1d4 + Vigor', seguintes: '1d6 + 1d4 + Vigor' },
+      pm: { inicial: 'Mana Natural + 4', seguintes: '+4' },
+      maestrias: [
+        ['Resistências', 'Força e Agilidade'],
+        ['Armaduras', 'Armaduras leves'],
+        ['Armas', '2 Grupos'],
+      ],
+      treinamento: 'Acrobacia, Atletismo, Furtividade, Intimidação, Intuição, Medicina, Percepção, Persuasão, Prestidigitação e Sobrevivência.',
+      progressao: [
+        ['1º', '+2', '+3', '+2', '7'], ['2º', '+2', '+2', '0', '5'],
+        ['3º', '+2', '0', '+3', '5'], ['4º', '+3', '+4', '0', '5'],
+        ['5º', '+3', '0', '+5', '5'], ['6º', '+3', '+4', '0', '5'],
+        ['7º', '+4', '0', '+5', '5'], ['8º', '+4', '+4', '0', '5'],
+      ],
+      ramificacoes: [
+        ['Artista Marcial', 'Enxerga o combate como um fluxo contínuo, uma dança precisa de movimentos, respirações e intenções. É mestre em estilos, golpes e manobras.'],
+        ['Punho Elemental', 'Transforma o corpo em condutor dos poderes primordiais, incorporando fogo, gelo, trovão, pedra ou vento em seus ataques.'],
+        ['Mestre do Ki', 'Canaliza a energia vital para fortalecer seus golpes, acelerar o corpo e ampliar sua resistência além dos limites naturais.'],
+      ],
+    },
+  };
+
   function buildStaticBlocks() {
     // Atributos (losangos)
     $('#attrs').innerHTML = ATTRS.map(a => `
@@ -489,28 +584,78 @@
       </div>`).join('');
   }
 
+  function renderPathDetails() {
+    const path = sheetData.caminho;
+    const detail = PATH_DETAILS[path];
+    const overview = $('#path-overview');
+    overview.hidden = !detail;
+    if (!detail) return;
+
+    $('#path-detail-name').textContent = path;
+    $('#path-detail-content').innerHTML = `
+      <div class="path-description">
+        ${detail.descricao.map(paragraph => `<p>${paragraph}</p>`).join('')}
+      </div>
+      <div class="path-facts">
+        <article class="path-fact">
+          <h3>Características</h3>
+          <dl>
+            <div><dt>Atributo das habilidades</dt><dd>${detail.atributo}</dd></div>
+            <div><dt>PV no 1º nível</dt><dd>${detail.pv.inicial}</dd></div>
+            <div><dt>PV nos níveis seguintes</dt><dd>${detail.pv.seguintes}</dd></div>
+            <div><dt>PM no 1º nível</dt><dd>${detail.pm.inicial}</dd></div>
+            <div><dt>PM nos níveis seguintes</dt><dd>${detail.pm.seguintes}</dd></div>
+          </dl>
+        </article>
+        <article class="path-fact">
+          <h3>Maestrias e treinamento</h3>
+          <dl>
+            ${detail.maestrias.map(([label, value]) => `<div><dt>${label}</dt><dd>${value}</dd></div>`).join('')}
+            <div><dt>Perícias</dt><dd>${detail.treinamento}</dd></div>
+          </dl>
+        </article>
+      </div>
+      <div class="path-progression-wrap">
+        <h3>Progressão do Caminho</h3>
+        <div class="path-table-scroll">
+          <table class="path-progression">
+            <thead><tr><th>Nível</th><th>Maestria</th><th>Treinamento</th><th>Estudos</th><th>Pontos de Habilidade</th></tr></thead>
+            <tbody>${detail.progressao.map(row => `<tr>${row.map(value => `<td>${value}</td>`).join('')}</tr>`).join('')}</tbody>
+          </table>
+        </div>
+      </div>
+      <div class="path-branches">
+        <h3>Ramificações</h3>
+        <div>${detail.ramificacoes.map(([name, description]) => `
+          <article><h4>${name}</h4><p>${description}</p></article>`).join('')}</div>
+      </div>`;
+  }
+
   function updatePathUI() {
-    const isCleric = sheetData.caminho === 'Clérigo';
-    $('#btn-open-abilities').disabled = !isCleric;
-    $('#path-helper').textContent = isCleric
-      ? 'Preencha manualmente ou escolha uma habilidade pronta do catálogo do Clérigo.'
-      : 'Selecione Clérigo no campo Caminho da ficha para acessar o catálogo.';
+    const path = sheetData.caminho;
+    const hasCatalog = !!PATH_ABILITIES[path];
+    $('#btn-open-abilities').disabled = !hasCatalog;
+    $('#path-helper').textContent = hasCatalog
+      ? `Preencha manualmente ou escolha uma habilidade pronta do catálogo do ${path}.`
+      : 'Selecione um Caminho na ficha para acessar seu catálogo.';
+    renderPathDetails();
   }
 
   function renderAbilityCatalog() {
+    const abilities = PATH_ABILITIES[sheetData.caminho] || [];
     const query = $('#ability-search').value.trim().toLocaleLowerCase('pt-BR');
     const level = $('#ability-level').value;
     const selectedNames = new Set(
       Array.from({ length: 8 }, (_, i) => sheetData[`hab.${i}.nome`]).filter(Boolean)
     );
-    const matches = CLERIC_ABILITIES.filter(ability => {
-      const text = `${ability.nome} ${ability.tipo} ${ability.descricao}`.toLocaleLowerCase('pt-BR');
+    const matches = abilities.filter(ability => {
+      const text = `${ability.nome} ${ability.tipo} ${ability.requisito || ''} ${ability.descricao}`.toLocaleLowerCase('pt-BR');
       return (!level || ability.nivel === level) && (!query || text.includes(query));
     });
 
     $('#ability-empty').hidden = matches.length > 0;
     $('#ability-catalog').innerHTML = matches.map((ability, index) => {
-      const sourceIndex = CLERIC_ABILITIES.indexOf(ability);
+      const sourceIndex = abilities.indexOf(ability);
       const added = selectedNames.has(ability.nome);
       const levelLabel = ability.nivel === 'restrita' ? 'Restrita' : `Nível ${ability.nivel}º`;
       return `
@@ -522,6 +667,7 @@
           <details ${index === 0 && matches.length < 4 ? 'open' : ''}>
             <summary>${ability.nome}</summary>
             <dl class="catalog-meta">
+              ${ability.requisito ? `<div><dt>Requisito</dt><dd>${ability.requisito}</dd></div>` : ''}
               <div><dt>Tipo</dt><dd>${ability.tipo}</dd></div><div><dt>Gasto</dt><dd>${ability.gasto}</dd></div>
               <div><dt>Ação</dt><dd>${ability.acao}</dd></div><div><dt>Alcance</dt><dd>${ability.alcance}</dd></div>
               <div><dt>Duração</dt><dd>${ability.duracao}</dd></div>
@@ -532,7 +678,7 @@
     }).join('');
   }
 
-  function addClericAbility(ability) {
+  function addPathAbility(ability) {
     const slot = Array.from({ length: 8 }, (_, i) => i)
       .find(i => !String(sheetData[`hab.${i}.nome`] ?? '').trim());
     if (slot === undefined) {
@@ -550,6 +696,7 @@
   $('#btn-open-abilities').addEventListener('click', () => {
     $('#ability-search').value = '';
     $('#ability-level').value = '';
+    $('#ability-picker-path').textContent = `Caminho do ${sheetData.caminho}`;
     renderAbilityCatalog();
     $('#ability-picker').showModal();
     setTimeout(() => $('#ability-search').focus(), 0);
@@ -558,7 +705,8 @@
   $('#ability-level').addEventListener('change', renderAbilityCatalog);
   $('#ability-catalog').addEventListener('click', e => {
     const button = e.target.closest('[data-add-ability]');
-    if (button) addClericAbility(CLERIC_ABILITIES[Number(button.dataset.addAbility)]);
+    const abilities = PATH_ABILITIES[sheetData.caminho] || [];
+    if (button) addPathAbility(abilities[Number(button.dataset.addAbility)]);
   });
   $('#ability-picker').addEventListener('click', e => {
     if (e.target === $('#ability-picker')) $('#ability-picker').close();
