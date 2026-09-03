@@ -9,6 +9,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const PORT = process.env.PORT || 3000;
 const APP_PASSWORD = process.env.APP_PASSWORD;
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const SESSION_SECRET = process.env.SESSION_SECRET;
 const IS_PROD = process.env.NODE_ENV === 'production' || !!process.env.RENDER;
 const SESSION_HOURS = 24 * 7; // sessao vale 7 dias
@@ -26,27 +27,62 @@ app.use(cookieParser());
 
 /* ---------------- Sessao (token HMAC assinado, sem estado no banco) ---------------- */
 
-function signToken() {
+function hashPassword(password) {
+  return new Promise((resolve, reject) => {
+    const salt = crypto.randomBytes(16);
+    crypto.scrypt(password, salt, 64, (err, key) => {
+      if (err) return reject(err);
+      resolve(`scrypt:${salt.toString('hex')}:${key.toString('hex')}`);
+    });
+  });
+}
+
+function verifyPassword(password, stored) {
+  return new Promise(resolve => {
+    const [algorithm, saltHex, keyHex] = String(stored || '').split(':');
+    if (algorithm !== 'scrypt' || !saltHex || !keyHex) return resolve(false);
+    const expected = Buffer.from(keyHex, 'hex');
+    crypto.scrypt(password, Buffer.from(saltHex, 'hex'), expected.length, (err, key) => {
+      resolve(!err && key.length === expected.length && crypto.timingSafeEqual(key, expected));
+    });
+  });
+}
+
+function signToken(user) {
   const exp = Date.now() + SESSION_HOURS * 3600_000;
-  const payload = String(exp);
+  const payload = Buffer.from(JSON.stringify({ id: user.id, username: user.username, role: user.role, exp })).toString('base64url');
   const sig = crypto.createHmac('sha256', SESSION_SECRET).update(payload).digest('hex');
   return `${payload}.${sig}`;
 }
 
 function verifyToken(token) {
-  if (!token || typeof token !== 'string') return false;
+  if (!token || typeof token !== 'string') return null;
   const [payload, sig] = token.split('.');
-  if (!payload || !sig) return false;
+  if (!payload || !sig) return null;
   const expected = crypto.createHmac('sha256', SESSION_SECRET).update(payload).digest('hex');
   const a = Buffer.from(sig);
   const b = Buffer.from(expected);
-  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return false;
-  return Number(payload) > Date.now();
+  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
+  try {
+    const user = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
+    return user.id && user.exp > Date.now() ? user : null;
+  } catch { return null; }
 }
 
-function requireAuth(req, res, next) {
-  if (verifyToken(req.cookies[COOKIE_NAME])) return next();
-  res.status(401).json({ error: 'Não autenticado' });
+async function requireAuth(req, res, next) {
+  const user = verifyToken(req.cookies[COOKIE_NAME]);
+  if (!user) return res.status(401).json({ error: 'Não autenticado' });
+  try {
+    const { rows } = await pool.query('SELECT id, username, role FROM users WHERE id = $1 AND active = true', [user.id]);
+    if (!rows[0]) return res.status(401).json({ error: 'Conta desativada ou sessão inválida' });
+    req.user = rows[0];
+    next();
+  } catch (e) { next(e); }
+}
+
+function requireAdmin(req, res, next) {
+  if (req.user?.role === 'admin') return next();
+  res.status(403).json({ error: 'Acesso exclusivo do administrador' });
 }
 
 /* ---------------- Limite de tentativas de login (forca bruta) ---------------- */
@@ -72,20 +108,27 @@ function rateLimit(req, res, next) {
 
 /* ---------------- Rotas de autenticacao ---------------- */
 
-app.post('/api/login', rateLimit, (req, res) => {
-  const given = String(req.body?.password ?? '');
-  const a = Buffer.from(given);
-  const b = Buffer.from(APP_PASSWORD);
-  const ok = a.length === b.length && crypto.timingSafeEqual(a, b);
-  if (!ok) return res.status(401).json({ error: 'Senha incorreta' });
+app.post('/api/login', rateLimit, async (req, res, next) => {
+  try {
+    const username = String(req.body?.username ?? '').trim();
+    const password = String(req.body?.password ?? '');
+    const { rows } = await pool.query(
+      'SELECT id, username, password_hash, role, active FROM users WHERE lower(username) = lower($1)',
+      [username]
+    );
+    const user = rows[0];
+    const ok = user?.active && await verifyPassword(password, user.password_hash);
+    if (!ok) return res.status(401).json({ error: 'Usuário ou senha incorretos' });
 
-  res.cookie(COOKIE_NAME, signToken(), {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: IS_PROD,
-    maxAge: SESSION_HOURS * 3600_000,
-  });
-  res.json({ ok: true });
+    attempts.delete(req.ip || 'desconhecido');
+    res.cookie(COOKIE_NAME, signToken(user), {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: IS_PROD,
+      maxAge: SESSION_HOURS * 3600_000,
+    });
+    res.json({ ok: true, user: { username: user.username, role: user.role } });
+  } catch (e) { next(e); }
 });
 
 app.post('/api/logout', (req, res) => {
@@ -93,8 +136,78 @@ app.post('/api/logout', (req, res) => {
   res.json({ ok: true });
 });
 
-app.get('/api/session', (req, res) => {
-  res.json({ authenticated: verifyToken(req.cookies[COOKIE_NAME]) });
+app.get('/api/session', async (req, res, next) => {
+  const user = verifyToken(req.cookies[COOKIE_NAME]);
+  if (!user) return res.json({ authenticated: false, user: null });
+  try {
+    const { rows } = await pool.query('SELECT username, role FROM users WHERE id = $1 AND active = true', [user.id]);
+    const current = rows[0];
+    res.json({ authenticated: !!current, user: current || null });
+  } catch (e) { next(e); }
+});
+
+/* ---------------- Administração de usuários ---------------- */
+
+app.get('/api/admin/users', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT id, username, role, active, created_at,
+              (SELECT count(*)::int FROM sheets WHERE owner_id = users.id) AS sheet_count
+       FROM users ORDER BY role, lower(username)`
+    );
+    res.json(rows);
+  } catch (e) { next(e); }
+});
+
+app.post('/api/admin/users', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const username = String(req.body?.username ?? '').trim();
+    const password = String(req.body?.password ?? '');
+    if (!/^[\p{L}\p{N}._-]{3,40}$/u.test(username)) {
+      return res.status(400).json({ error: 'Use de 3 a 40 letras, números, ponto, hífen ou sublinhado no usuário' });
+    }
+    if (password.length < 8 || password.length > 200) {
+      return res.status(400).json({ error: 'A senha deve ter pelo menos 8 caracteres' });
+    }
+    const passwordHash = await hashPassword(password);
+    const { rows } = await pool.query(
+      `INSERT INTO users (username, password_hash) VALUES ($1, $2)
+       RETURNING id, username, role, active, created_at`,
+      [username, passwordHash]
+    );
+    res.status(201).json(rows[0]);
+  } catch (e) {
+    if (e?.code === '23505') return res.status(409).json({ error: 'Esse nome de usuário já existe' });
+    next(e);
+  }
+});
+
+app.patch('/api/admin/users/:id', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    if (req.params.id === req.user.id && req.body?.active === false) {
+      return res.status(400).json({ error: 'Você não pode desativar a própria conta' });
+    }
+    const updates = [];
+    const values = [];
+    if (typeof req.body?.active === 'boolean') {
+      values.push(req.body.active); updates.push(`active = $${values.length}`);
+    }
+    if (req.body?.password !== undefined) {
+      const password = String(req.body.password);
+      if (password.length < 8 || password.length > 200) {
+        return res.status(400).json({ error: 'A senha deve ter pelo menos 8 caracteres' });
+      }
+      values.push(await hashPassword(password)); updates.push(`password_hash = $${values.length}`);
+    }
+    if (!updates.length) return res.status(400).json({ error: 'Nenhuma alteração informada' });
+    values.push(req.params.id);
+    const { rows } = await pool.query(
+      `UPDATE users SET ${updates.join(', ')}, updated_at = now() WHERE id = $${values.length}
+       RETURNING id, username, role, active, created_at`, values
+    );
+    if (!rows[0]) return res.status(404).json({ error: 'Usuário não encontrado' });
+    res.json(rows[0]);
+  } catch (e) { next(e); }
 });
 
 /* ---------------- Rotas das fichas (todas protegidas) ---------------- */
@@ -102,7 +215,8 @@ app.get('/api/session', (req, res) => {
 app.get('/api/sheets', requireAuth, async (req, res, next) => {
   try {
     const { rows } = await pool.query(
-      'SELECT id, name, updated_at FROM sheets ORDER BY updated_at DESC'
+      'SELECT id, name, updated_at FROM sheets WHERE owner_id = $1 ORDER BY updated_at DESC',
+      [req.user.id]
     );
     res.json(rows);
   } catch (e) { next(e); }
@@ -111,7 +225,8 @@ app.get('/api/sheets', requireAuth, async (req, res, next) => {
 app.post('/api/sheets', requireAuth, async (req, res, next) => {
   try {
     const { rows } = await pool.query(
-      `INSERT INTO sheets (name, data) VALUES ('Sem nome', '{}'::jsonb) RETURNING id, name, data`
+      `INSERT INTO sheets (name, data, owner_id) VALUES ('Sem nome', '{}'::jsonb, $1) RETURNING id, name, data`,
+      [req.user.id]
     );
     res.status(201).json(rows[0]);
   } catch (e) { next(e); }
@@ -120,8 +235,8 @@ app.post('/api/sheets', requireAuth, async (req, res, next) => {
 app.get('/api/sheets/:id', requireAuth, async (req, res, next) => {
   try {
     const { rows } = await pool.query(
-      'SELECT id, name, data, updated_at FROM sheets WHERE id = $1',
-      [req.params.id]
+      'SELECT id, name, data, updated_at FROM sheets WHERE id = $1 AND owner_id = $2',
+      [req.params.id, req.user.id]
     );
     if (!rows[0]) return res.status(404).json({ error: 'Ficha não encontrada' });
     res.json(rows[0]);
@@ -138,8 +253,8 @@ async function updateSheet(req, res, next) {
     const name = String(data['nome'] || 'Sem nome').slice(0, 120);
     const { rows } = await pool.query(
       `UPDATE sheets SET data = $1::jsonb, name = $2, updated_at = now()
-       WHERE id = $3 RETURNING id, updated_at`,
-      [JSON.stringify(data), name, req.params.id]
+       WHERE id = $3 AND owner_id = $4 RETURNING id, updated_at`,
+      [JSON.stringify(data), name, req.params.id, req.user.id]
     );
     if (!rows[0]) return res.status(404).json({ error: 'Ficha não encontrada' });
     res.json({ ok: true, updated_at: rows[0].updated_at });
@@ -151,7 +266,7 @@ app.post('/api/sheets/:id', requireAuth, updateSheet);
 
 app.delete('/api/sheets/:id', requireAuth, async (req, res, next) => {
   try {
-    const { rowCount } = await pool.query('DELETE FROM sheets WHERE id = $1', [req.params.id]);
+    const { rowCount } = await pool.query('DELETE FROM sheets WHERE id = $1 AND owner_id = $2', [req.params.id, req.user.id]);
     if (!rowCount) return res.status(404).json({ error: 'Ficha não encontrada' });
     res.json({ ok: true });
   } catch (e) { next(e); }
@@ -168,7 +283,23 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Erro interno' });
 });
 
-initDb()
+async function bootstrap() {
+  await initDb();
+  let { rows } = await pool.query('SELECT id FROM users WHERE lower(username) = lower($1)', [ADMIN_USERNAME]);
+  let adminId = rows[0]?.id;
+  if (!adminId) {
+    const passwordHash = await hashPassword(APP_PASSWORD);
+    ({ rows } = await pool.query(
+      `INSERT INTO users (username, password_hash, role) VALUES ($1, $2, 'admin') RETURNING id`,
+      [ADMIN_USERNAME, passwordHash]
+    ));
+    adminId = rows[0].id;
+    console.log(`Administrador inicial criado: ${ADMIN_USERNAME}`);
+  }
+  await pool.query('UPDATE sheets SET owner_id = $1 WHERE owner_id IS NULL', [adminId]);
+}
+
+bootstrap()
   .then(() => {
     app.listen(PORT, () => console.log(`Ficha RPG rodando em http://localhost:${PORT}`));
   })

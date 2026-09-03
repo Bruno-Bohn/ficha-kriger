@@ -17,6 +17,8 @@ services:
       - key: DATABASE_URL
         sync: false   # cole aqui a connection string do Neon
       - key: APP_PASSWORD
-        sync: false   # a senha fixa da tela de login
+        sync: false   # senha do administrador inicial
+      - key: ADMIN_USERNAME
+        value: admin
       - key: SESSION_SECRET
         generateValue: true

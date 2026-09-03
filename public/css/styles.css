@@ -144,15 +144,15 @@ select { cursor: pointer; }
 .login-sub { margin: 0 0 22px; color: var(--ink-soft); font-style: italic; }
 
 #login-form { display: flex; flex-direction: column; gap: 14px; }
-#login-password {
+#login-username, #login-password {
   border: 1.5px solid var(--line);
   border-radius: 8px;
   padding: 12px 14px;
   text-align: center;
   font-size: 1.1rem;
-  letter-spacing: .2em;
   background: rgba(255, 255, 255, .5);
 }
+#login-password { letter-spacing: .2em; }
 #login-btn { padding: 12px; font-size: 1rem; background: var(--ink); }
 .login-error { color: var(--accent); margin: 0; font-weight: 600; }
 
@@ -258,6 +258,27 @@ select { cursor: pointer; }
 .sheet-card-date { font-size: .78rem; color: var(--ink-soft); font-style: italic; }
 .sheet-card .btn-danger { padding: 6px 10px; font-size: .75rem; flex-shrink: 0; }
 .list-empty { text-align: center; color: var(--ink-soft); font-style: italic; margin-top: 40px; }
+
+/* ============================================================
+   ADMINISTRAÇÃO
+   ============================================================ */
+
+.admin-wrap { max-width: 920px; margin: 0 auto; padding: 20px 16px 60px; display: grid; gap: 16px; }
+.admin-note { margin: 0 0 14px; color: var(--ink-soft); }
+#admin-user-form { display: grid; grid-template-columns: 1fr 1fr auto; align-items: end; gap: 12px; }
+#admin-user-form input { border: 1.5px solid var(--line); border-radius: 8px; padding: 9px 10px; background: rgba(255,255,255,.45); }
+.admin-message { grid-column: 1 / -1; margin: 0; font-weight: 600; }
+.admin-message[data-state="success"] { color: var(--ok); }
+.admin-message[data-state="error"] { color: var(--accent); }
+.admin-users { display: flex; flex-direction: column; gap: 10px; }
+.admin-user { display: flex; align-items: center; justify-content: space-between; gap: 14px; border: 1.5px solid var(--line-soft); border-radius: 9px; padding: 12px; }
+.admin-user.is-inactive { opacity: .62; background: var(--parchment-2); }
+.admin-user-info { display: flex; flex-direction: column; min-width: 0; }
+.admin-user-info strong { font-family: "Cinzel", serif; }
+.admin-user-info span { color: var(--ink-soft); font-size: .85rem; }
+.admin-user-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.admin-user-actions .btn { padding: 6px 10px; font-size: .72rem; }
+.admin-badge { color: var(--accent); border: 1px solid var(--accent); border-radius: 20px; padding: 4px 9px; font-size: .72rem; }
 
 /* ============================================================
    FICHA — estrutura
@@ -699,6 +720,9 @@ select { cursor: pointer; }
   .picker-toolbar, .ability-catalog { grid-template-columns: 1fr; }
   .ability-picker { width: calc(100% - 12px); max-height: 94dvh; }
   .picker-header, .picker-toolbar, .ability-catalog { padding-left: 14px; padding-right: 14px; }
+  #admin-user-form { grid-template-columns: 1fr; }
+  .admin-user { align-items: stretch; flex-direction: column; }
+  .admin-user-actions { justify-content: flex-start; }
 }
 
 /* ============================================================

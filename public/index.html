@@ -18,8 +18,9 @@
     <div class="login-card">
       <div class="login-eye">✦</div>
       <h1 class="login-title">Ficha de Personagem</h1>
-      <p class="login-sub">Digite a senha para entrar</p>
+      <p class="login-sub">Entre com seu usuário e senha</p>
       <form id="login-form" autocomplete="off">
+        <input type="text" id="login-username" placeholder="Usuário" autocomplete="username" required>
         <input type="password" id="login-password" placeholder="Senha" autocomplete="current-password" required>
         <button type="submit" id="login-btn">Entrar</button>
         <p id="login-error" class="login-error" hidden></p>
@@ -32,6 +33,7 @@
     <header class="topbar">
       <h1 class="topbar-title">Suas Fichas</h1>
       <div class="topbar-actions">
+        <button id="btn-admin" class="btn btn-ghost" hidden>Usuários</button>
         <button id="btn-new-sheet" class="btn btn-primary">+ Nova Ficha</button>
         <button id="btn-logout" class="btn btn-ghost">Sair</button>
       </div>
@@ -39,6 +41,31 @@
     <main class="list-wrap">
       <div id="sheet-list" class="sheet-list"></div>
       <p id="list-empty" class="list-empty" hidden>Nenhuma ficha ainda. Crie a primeira!</p>
+    </main>
+  </section>
+
+  <!-- ============ ADMINISTRAÇÃO DE USUÁRIOS ============ -->
+  <section id="view-admin" class="view" hidden>
+    <header class="topbar">
+      <button id="btn-admin-back" class="btn btn-ghost">← Fichas</button>
+      <h1 class="topbar-title">Administração de usuários</h1>
+      <button id="btn-admin-logout" class="btn btn-ghost">Sair</button>
+    </header>
+    <main class="admin-wrap">
+      <section class="panel admin-create">
+        <h2 class="panel-title">Novo usuário</h2>
+        <p class="admin-note">Somente administradores podem criar contas. Não existe cadastro público.</p>
+        <form id="admin-user-form" autocomplete="off">
+          <label class="fld"><span>Usuário</span><input id="admin-new-username" minlength="3" maxlength="40" autocomplete="off" required></label>
+          <label class="fld"><span>Senha inicial</span><input id="admin-new-password" type="password" minlength="8" maxlength="200" autocomplete="new-password" required></label>
+          <button class="btn btn-primary" type="submit">Criar usuário</button>
+          <p id="admin-form-message" class="admin-message" hidden></p>
+        </form>
+      </section>
+      <section class="panel admin-users-panel">
+        <h2 class="panel-title">Usuários cadastrados</h2>
+        <div id="admin-users" class="admin-users"></div>
+      </section>
     </main>
   </section>
 

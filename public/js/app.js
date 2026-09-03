@@ -14,6 +14,7 @@
   let sheetData = {};        // dados da ficha aberta
   let saveTimer = null;
   let dirty = false;
+  let currentUser = null;
 
   const $ = (sel, el = document) => el.querySelector(sel);
   const $$ = (sel, el = document) => [...el.querySelectorAll(sel)];
@@ -22,6 +23,7 @@
     login: $('#view-login'),
     list: $('#view-list'),
     sheet: $('#view-sheet'),
+    admin: $('#view-admin'),
   };
 
   /* ---------------- API ---------------- */
@@ -57,8 +59,15 @@
     const hash = location.hash;
     const m = hash.match(/^#\/ficha\/([0-9a-f-]{36})$/i);
     try {
-      const { authenticated } = await api('/api/session');
+      const { authenticated, user } = await api('/api/session');
       if (!authenticated) { showView('login'); return; }
+      currentUser = user;
+      $('#btn-admin').hidden = user.role !== 'admin';
+      if (hash === '#/admin') {
+        if (user.role !== 'admin') { location.hash = ''; return; }
+        await openAdmin();
+        return;
+      }
       if (m) {
         await openSheet(m[1]);
       } else {
@@ -81,7 +90,10 @@
     try {
       await api('/api/login', {
         method: 'POST',
-        body: JSON.stringify({ password: $('#login-password').value }),
+        body: JSON.stringify({
+          username: $('#login-username').value,
+          password: $('#login-password').value,
+        }),
       });
       $('#login-password').value = '';
       location.hash = '';
@@ -102,6 +114,83 @@
   }
   $('#btn-logout').addEventListener('click', logout);
   $('#btn-logout-2').addEventListener('click', logout);
+  $('#btn-admin-logout').addEventListener('click', logout);
+
+  /* ---------------- Administração ---------------- */
+
+  async function openAdmin() {
+    setLoading(true);
+    try {
+      const users = await api('/api/admin/users');
+      const list = $('#admin-users');
+      list.innerHTML = users.map(user => `
+        <article class="admin-user ${user.active ? '' : 'is-inactive'}" data-user-id="${user.id}">
+          <div class="admin-user-info">
+            <strong>${escapeHtml(user.username)}</strong>
+            <span>${user.role === 'admin' ? 'Administrador' : 'Usuário'} · ${user.sheet_count} ficha${user.sheet_count === 1 ? '' : 's'}</span>
+          </div>
+          <div class="admin-user-actions">
+            ${user.role === 'admin' ? '<span class="admin-badge">Conta principal</span>' : `
+              <button type="button" class="btn btn-ghost" data-reset-password>Alterar senha</button>
+              <button type="button" class="btn ${user.active ? 'btn-danger' : 'btn-primary'}" data-toggle-user="${!user.active}">${user.active ? 'Desativar' : 'Reativar'}</button>`}
+          </div>
+        </article>`).join('');
+      showView('admin');
+    } finally { setLoading(false); }
+  }
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]);
+  }
+
+  $('#btn-admin').addEventListener('click', () => { location.hash = '#/admin'; });
+  $('#btn-admin-back').addEventListener('click', () => { location.hash = ''; });
+
+  $('#admin-user-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const message = $('#admin-form-message');
+    const button = e.currentTarget.querySelector('button[type="submit"]');
+    message.hidden = true;
+    button.disabled = true;
+    try {
+      await api('/api/admin/users', {
+        method: 'POST',
+        body: JSON.stringify({ username: $('#admin-new-username').value, password: $('#admin-new-password').value }),
+      });
+      e.currentTarget.reset();
+      message.textContent = 'Usuário criado com sucesso.';
+      message.dataset.state = 'success';
+      message.hidden = false;
+      await openAdmin();
+    } catch (err) {
+      message.textContent = err.message;
+      message.dataset.state = 'error';
+      message.hidden = false;
+    } finally { button.disabled = false; }
+  });
+
+  $('#admin-users').addEventListener('click', async e => {
+    const row = e.target.closest('[data-user-id]');
+    if (!row) return;
+    const toggle = e.target.closest('[data-toggle-user]');
+    const reset = e.target.closest('[data-reset-password]');
+    try {
+      if (toggle) {
+        await api(`/api/admin/users/${row.dataset.userId}`, {
+          method: 'PATCH', body: JSON.stringify({ active: toggle.dataset.toggleUser === 'true' }),
+        });
+        await openAdmin();
+      }
+      if (reset) {
+        const password = prompt('Digite a nova senha (mínimo de 8 caracteres):');
+        if (password === null) return;
+        await api(`/api/admin/users/${row.dataset.userId}`, {
+          method: 'PATCH', body: JSON.stringify({ password }),
+        });
+        alert('Senha alterada com sucesso.');
+      }
+    } catch (err) { alert(err.message); }
+  });
 
   /* ---------------- Lista de fichas ---------------- */
 

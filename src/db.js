@@ -19,12 +19,28 @@ export const pool = new Pool({
 
 export async function initDb() {
   await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      username      TEXT NOT NULL,
+      password_hash TEXT NOT NULL,
+      role          TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('admin', 'user')),
+      active        BOOLEAN NOT NULL DEFAULT true,
+      created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+
+    CREATE UNIQUE INDEX IF NOT EXISTS users_username_lower_idx ON users (lower(username));
+
     CREATE TABLE IF NOT EXISTS sheets (
       id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       name       TEXT NOT NULL DEFAULT 'Sem nome',
       data       JSONB NOT NULL DEFAULT '{}'::jsonb,
+      owner_id   UUID REFERENCES users(id) ON DELETE CASCADE,
       created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
+
+    ALTER TABLE sheets ADD COLUMN IF NOT EXISTS owner_id UUID REFERENCES users(id) ON DELETE CASCADE;
+    CREATE INDEX IF NOT EXISTS sheets_owner_updated_idx ON sheets (owner_id, updated_at DESC);
   `);
 }
