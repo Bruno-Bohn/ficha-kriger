@@ -103,6 +103,7 @@ select { cursor: pointer; }
 .btn:hover { opacity: .88; }
 .btn:active { transform: scale(.97); }
 .btn:disabled { cursor: not-allowed; opacity: .48; transform: none; }
+.btn:focus-visible { outline: 3px solid rgba(122, 47, 47, .3); outline-offset: 3px; }
 .btn-primary { background: var(--accent); border-color: var(--accent); }
 .btn-ghost { background: transparent; color: var(--ink); }
 .btn-danger { background: transparent; color: var(--accent); border-color: var(--accent); }
@@ -153,7 +154,14 @@ select { cursor: pointer; }
   background: rgba(255, 255, 255, .5);
 }
 #login-password { letter-spacing: .2em; }
-#login-btn { padding: 12px; font-size: 1rem; background: var(--ink); }
+#login-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  box-shadow: 0 3px 8px rgba(122, 47, 47, .22);
+}
 .login-error { color: var(--accent); margin: 0; font-weight: 600; }
 
 /* ============================================================
