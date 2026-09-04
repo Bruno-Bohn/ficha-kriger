@@ -585,8 +585,11 @@
 
     // Habilidades do Caminho (8 cards)
     $('#habilidades').innerHTML = Array.from({ length: 8 }, (_, i) => `
-      <div class="ability-card">
-        <label class="fld card-head"><span>Nome</span><input data-f="hab.${i}.nome"></label>
+      <div class="ability-card" data-ability-card>
+        <div class="ability-card-heading">
+          <label class="fld card-head"><span>Nome</span><input data-f="hab.${i}.nome"></label>
+          <button type="button" class="ability-remove" data-remove-ability="hab.${i}" disabled>Excluir</button>
+        </div>
         <div class="card-fields">
           ${ABILITY_FIELDS.map(([k, lbl]) =>
             `<label class="fld"><span>${lbl}</span><input data-f="hab.${i}.${k}"></label>`
@@ -597,8 +600,11 @@
 
     // Habilidades da Linhagem (livres, sem catálogo ou ligação com o Caminho)
     $('#linhagem-habilidades').innerHTML = Array.from({ length: 8 }, (_, i) => `
-      <div class="ability-card">
-        <label class="fld card-head"><span>Nome</span><input data-f="linhagem.hab.${i}.nome"></label>
+      <div class="ability-card" data-ability-card>
+        <div class="ability-card-heading">
+          <label class="fld card-head"><span>Nome</span><input data-f="linhagem.hab.${i}.nome"></label>
+          <button type="button" class="ability-remove" data-remove-ability="linhagem.hab.${i}" disabled>Excluir</button>
+        </div>
         <div class="card-fields">
           ${ABILITY_FIELDS.map(([k, lbl]) =>
             `<label class="fld"><span>${lbl}</span><input data-f="linhagem.hab.${i}.${k}"></label>`
@@ -766,6 +772,49 @@
 
   /* ---------------- Binding de dados ---------------- */
 
+  const ABILITY_LISTS = [
+    { container: '#habilidades', search: '#path-skills-search', empty: '#path-skills-empty' },
+    { container: '#linhagem-habilidades', search: '#lineage-skills-search', empty: '#lineage-skills-empty' },
+  ];
+
+  function normalizeAbilitySearch(value) {
+    return String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR');
+  }
+
+  function refreshAbilityList({ container, search, empty }) {
+    const query = normalizeAbilitySearch($(search).value.trim());
+    let visibleCards = 0;
+
+    $$('[data-ability-card]', $(container)).forEach(card => {
+      const fields = $$('[data-f]', card);
+      const hasContent = fields.some(field => field.value.trim() !== '');
+      const searchableText = normalizeAbilitySearch(fields.map(field => field.value).join(' '));
+      const matches = !query || searchableText.includes(query);
+      card.hidden = !matches;
+      $('[data-remove-ability]', card).disabled = !hasContent;
+      if (matches) visibleCards += 1;
+    });
+
+    $(empty).hidden = visibleCards > 0;
+  }
+
+  function refreshAbilityLists() {
+    ABILITY_LISTS.forEach(refreshAbilityList);
+  }
+
+  function removeAbility(prefix) {
+    const name = String(sheetData[`${prefix}.nome`] ?? '').trim();
+    if (!confirm(`Excluir ${name ? `a habilidade “${name}”` : 'esta habilidade'}?`)) return;
+
+    $$(`[data-f^="${prefix}."]`).forEach(field => {
+      delete sheetData[field.dataset.f];
+      field.value = '';
+    });
+    refreshAbilityLists();
+    renderAbilityCatalog();
+    scheduleSave();
+  }
+
   function fillForm() {
     const selectedBackground = sheetData.antecedente;
     const backgroundSelect = $('#antecedente-select');
@@ -784,6 +833,7 @@
     recalcAllTotals();
     updatePathUI();
     renderBackgroundDetails();
+    refreshAbilityLists();
   }
 
   function onFieldInput(e) {
@@ -798,10 +848,16 @@
     if (/^pericia\..+\.(ante|treino|estatr)$/.test(el.dataset.f)) {
       recalcTotal(el.closest('.skill-row'));
     }
+    if (el.closest('[data-ability-card]')) refreshAbilityLists();
     scheduleSave();
   }
 
   function onToggleClick(e) {
+    const removeButton = e.target.closest('[data-remove-ability]');
+    if (removeButton) {
+      removeAbility(removeButton.dataset.removeAbility);
+      return;
+    }
     const btn = e.target.closest('[data-t]');
     if (!btn) return;
     const on = btn.getAttribute('aria-pressed') !== 'true';
@@ -956,6 +1012,10 @@
   /* ---------------- Inicializacao ---------------- */
 
   buildStaticBlocks();
+
+  ABILITY_LISTS.forEach(({ search }) => {
+    $(search).addEventListener('input', refreshAbilityLists);
+  });
 
   const sheetView = views.sheet;
   sheetView.addEventListener('input', onFieldInput);
