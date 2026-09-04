@@ -369,6 +369,7 @@
   ];
 
   const MIN_ABILITY_SLOTS = 8;
+  const MAX_ABILITY_SLOTS = 50;
 
   const SPELL_FIELDS = [
     ['dizer', 'Dizer'], ['tipo', 'Tipo'], ['acao', 'Ação'],
@@ -740,6 +741,7 @@
       .find(i => !String(sheetData[`hab.${i}.nome`] ?? '').trim());
     if (slot === undefined) {
       slot = addAbilitySlot('hab', { focus: false, save: false });
+      if (slot === undefined) return;
     }
     ['nome', 'tipo', 'gasto', 'acao', 'alcance', 'duracao', 'descricao'].forEach(key => {
       sheetData[`hab.${slot}.${key}`] = ability[key];
@@ -787,7 +789,7 @@
       if (Number.isInteger(index)) highestSavedIndex = Math.max(highestSavedIndex, index);
     });
     const configuredCount = Number.parseInt(sheetData[configKey], 10) || 0;
-    return Math.max(MIN_ABILITY_SLOTS, configuredCount, highestSavedIndex + 1);
+    return Math.min(MAX_ABILITY_SLOTS, Math.max(MIN_ABILITY_SLOTS, configuredCount, highestSavedIndex + 1));
   }
 
   function renderAbilitySlotsForSheet() {
@@ -803,6 +805,10 @@
 
     const container = $(list.container);
     const index = $$('[data-ability-card]', container).length;
+    if (index >= MAX_ABILITY_SLOTS) {
+      alert(`O limite de ${MAX_ABILITY_SLOTS} slots foi atingido. Exclua uma habilidade antes de adicionar outra.`);
+      return undefined;
+    }
     sheetData[list.configKey] = index + 1;
     container.insertAdjacentHTML('beforeend', abilityCardMarkup(prefix, index));
     $(list.search).value = '';
@@ -819,11 +825,12 @@
     return String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR');
   }
 
-  function refreshAbilityList({ container, search, empty }) {
+  function refreshAbilityList({ prefix, container, search, empty }) {
     const query = normalizeAbilitySearch($(search).value.trim());
     let visibleCards = 0;
+    const cards = $$('[data-ability-card]', $(container));
 
-    $$('[data-ability-card]', $(container)).forEach(card => {
+    cards.forEach(card => {
       const fields = $$('[data-f]', card);
       const hasContent = fields.some(field => field.value.trim() !== '');
       const searchableText = normalizeAbilitySearch(fields.map(field => field.value).join(' '));
@@ -834,6 +841,15 @@
     });
 
     $(empty).hidden = visibleCards > 0;
+    const addButton = $(`[data-add-ability-slot="${prefix}"]`);
+    if (addButton) {
+      const atLimit = cards.length >= MAX_ABILITY_SLOTS;
+      addButton.disabled = atLimit;
+      addButton.textContent = atLimit
+        ? `Limite atingido (${MAX_ABILITY_SLOTS})`
+        : `+ Novo slot (${cards.length}/${MAX_ABILITY_SLOTS})`;
+      addButton.title = atLimit ? `Máximo de ${MAX_ABILITY_SLOTS} slots` : '';
+    }
   }
 
   function refreshAbilityLists() {
