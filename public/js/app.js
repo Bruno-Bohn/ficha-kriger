@@ -368,6 +368,8 @@
     ['alcance', 'Alcance'], ['duracao', 'Duração'],
   ];
 
+  const MIN_ABILITY_SLOTS = 8;
+
   const SPELL_FIELDS = [
     ['dizer', 'Dizer'], ['tipo', 'Tipo'], ['acao', 'Ação'],
     ['alcance', 'Alcance'], ['duracao', 'Duração'],
@@ -583,35 +585,9 @@
         </div>
       </div>`).join('');
 
-    // Habilidades do Caminho (8 cards)
-    $('#habilidades').innerHTML = Array.from({ length: 8 }, (_, i) => `
-      <div class="ability-card" data-ability-card>
-        <div class="ability-card-heading">
-          <label class="fld card-head"><span>Nome</span><input data-f="hab.${i}.nome"></label>
-          <button type="button" class="ability-remove" data-remove-ability="hab.${i}" disabled>Excluir</button>
-        </div>
-        <div class="card-fields">
-          ${ABILITY_FIELDS.map(([k, lbl]) =>
-            `<label class="fld"><span>${lbl}</span><input data-f="hab.${i}.${k}"></label>`
-          ).join('')}
-        </div>
-        <textarea data-f="hab.${i}.descricao" rows="3" placeholder="Descrição..."></textarea>
-      </div>`).join('');
-
-    // Habilidades da Linhagem (livres, sem catálogo ou ligação com o Caminho)
-    $('#linhagem-habilidades').innerHTML = Array.from({ length: 8 }, (_, i) => `
-      <div class="ability-card" data-ability-card>
-        <div class="ability-card-heading">
-          <label class="fld card-head"><span>Nome</span><input data-f="linhagem.hab.${i}.nome"></label>
-          <button type="button" class="ability-remove" data-remove-ability="linhagem.hab.${i}" disabled>Excluir</button>
-        </div>
-        <div class="card-fields">
-          ${ABILITY_FIELDS.map(([k, lbl]) =>
-            `<label class="fld"><span>${lbl}</span><input data-f="linhagem.hab.${i}.${k}"></label>`
-          ).join('')}
-        </div>
-        <textarea data-f="linhagem.hab.${i}.descricao" rows="3" placeholder="Descrição..."></textarea>
-      </div>`).join('');
+    // Habilidades do Caminho e da Linhagem
+    renderAbilitySlots('#habilidades', 'hab', MIN_ABILITY_SLOTS);
+    renderAbilitySlots('#linhagem-habilidades', 'linhagem.hab', MIN_ABILITY_SLOTS);
 
     // Magias (6 cards)
     $('#magias').innerHTML = Array.from({ length: 6 }, (_, i) => `
@@ -624,6 +600,28 @@
         </div>
         <textarea data-f="magia.${i}.descricao" rows="3" placeholder="Descrição..."></textarea>
       </div>`).join('');
+  }
+
+  function abilityCardMarkup(prefix, index) {
+    return `
+      <div class="ability-card" data-ability-card>
+        <div class="ability-card-heading">
+          <label class="fld card-head"><span>Nome</span><input data-f="${prefix}.${index}.nome"></label>
+          <button type="button" class="ability-remove" data-remove-ability="${prefix}.${index}" disabled>Excluir</button>
+        </div>
+        <div class="card-fields">
+          ${ABILITY_FIELDS.map(([key, label]) =>
+            `<label class="fld"><span>${label}</span><input data-f="${prefix}.${index}.${key}"></label>`
+          ).join('')}
+        </div>
+        <textarea data-f="${prefix}.${index}.descricao" rows="3" placeholder="Descrição..."></textarea>
+      </div>`;
+  }
+
+  function renderAbilitySlots(container, prefix, count) {
+    $(container).innerHTML = Array.from({ length: count }, (_, index) =>
+      abilityCardMarkup(prefix, index)
+    ).join('');
   }
 
   function renderPathDetails() {
@@ -737,11 +735,11 @@
   }
 
   function addPathAbility(ability) {
-    const slot = Array.from({ length: 8 }, (_, i) => i)
+    const slotCount = $$('#habilidades [data-ability-card]').length;
+    let slot = Array.from({ length: slotCount }, (_, i) => i)
       .find(i => !String(sheetData[`hab.${i}.nome`] ?? '').trim());
     if (slot === undefined) {
-      alert('Os 8 espaços de habilidade já estão preenchidos. Apague uma habilidade para liberar espaço.');
-      return;
+      slot = addAbilitySlot('hab', { focus: false, save: false });
     }
     ['nome', 'tipo', 'gasto', 'acao', 'alcance', 'duracao', 'descricao'].forEach(key => {
       sheetData[`hab.${slot}.${key}`] = ability[key];
@@ -773,9 +771,49 @@
   /* ---------------- Binding de dados ---------------- */
 
   const ABILITY_LISTS = [
-    { container: '#habilidades', search: '#path-skills-search', empty: '#path-skills-empty' },
-    { container: '#linhagem-habilidades', search: '#lineage-skills-search', empty: '#lineage-skills-empty' },
+    { prefix: 'hab', configKey: 'config.pathAbilitySlots', container: '#habilidades', search: '#path-skills-search', empty: '#path-skills-empty' },
+    { prefix: 'linhagem.hab', configKey: 'config.lineageAbilitySlots', container: '#linhagem-habilidades', search: '#lineage-skills-search', empty: '#lineage-skills-empty' },
   ];
+
+  function getAbilityList(prefix) {
+    return ABILITY_LISTS.find(list => list.prefix === prefix);
+  }
+
+  function getAbilitySlotCount({ prefix, configKey }) {
+    let highestSavedIndex = -1;
+    Object.keys(sheetData).forEach(key => {
+      if (!key.startsWith(`${prefix}.`)) return;
+      const index = Number.parseInt(key.slice(prefix.length + 1).split('.')[0], 10);
+      if (Number.isInteger(index)) highestSavedIndex = Math.max(highestSavedIndex, index);
+    });
+    const configuredCount = Number.parseInt(sheetData[configKey], 10) || 0;
+    return Math.max(MIN_ABILITY_SLOTS, configuredCount, highestSavedIndex + 1);
+  }
+
+  function renderAbilitySlotsForSheet() {
+    ABILITY_LISTS.forEach(list => {
+      renderAbilitySlots(list.container, list.prefix, getAbilitySlotCount(list));
+    });
+  }
+
+  function addAbilitySlot(prefix, options = {}) {
+    const { focus = true, save = true } = options;
+    const list = getAbilityList(prefix);
+    if (!list) return undefined;
+
+    const container = $(list.container);
+    const index = $$('[data-ability-card]', container).length;
+    sheetData[list.configKey] = index + 1;
+    container.insertAdjacentHTML('beforeend', abilityCardMarkup(prefix, index));
+    $(list.search).value = '';
+    refreshAbilityLists();
+    if (focus) {
+      const newCard = $$('[data-ability-card]', container).at(-1);
+      $('[data-f$=".nome"]', newCard)?.focus();
+    }
+    if (save) scheduleSave();
+    return index;
+  }
 
   function normalizeAbilitySearch(value) {
     return String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR');
@@ -823,6 +861,7 @@
     if (selectedBackground && !hasBackgroundOption) {
       backgroundSelect.add(new Option(`${selectedBackground} (anterior)`, selectedBackground));
     }
+    renderAbilitySlotsForSheet();
     $$('[data-f]').forEach(el => {
       el.value = sheetData[el.dataset.f] ?? '';
     });
@@ -853,6 +892,11 @@
   }
 
   function onToggleClick(e) {
+    const addSlotButton = e.target.closest('[data-add-ability-slot]');
+    if (addSlotButton) {
+      addAbilitySlot(addSlotButton.dataset.addAbilitySlot);
+      return;
+    }
     const removeButton = e.target.closest('[data-remove-ability]');
     if (removeButton) {
       removeAbility(removeButton.dataset.removeAbility);

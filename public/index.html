@@ -102,9 +102,9 @@
     <nav class="tabs" id="tabs">
       <button class="tab active" data-tab="tab-ficha">Ficha</button>
       <button class="tab" data-tab="tab-recursos">Inventário &amp; Detalhes</button>
-      <button class="tab" data-tab="tab-linhagem">Linhagem</button>
       <button class="tab" data-tab="tab-caminho">Caminho</button>
       <button class="tab" data-tab="tab-magias">Magias</button>
+      <button class="tab" data-tab="tab-linhagem">Linhagem</button>
     </nav>
 
     <main class="sheet-wrap">
@@ -310,7 +310,10 @@
         </section>
         <div class="ability-list-heading">
           <h3 class="lineage-abilities-title">Habilidades da Linhagem</h3>
-          <label class="ability-list-search"><span>Pesquisar</span><input id="lineage-skills-search" type="search" placeholder="Buscar habilidades..."></label>
+          <div class="ability-list-actions">
+            <label class="ability-list-search"><span>Pesquisar</span><input id="lineage-skills-search" type="search" placeholder="Buscar habilidades..."></label>
+            <button type="button" class="btn btn-ghost ability-add-slot" data-add-ability-slot="linhagem.hab">+ Novo slot</button>
+          </div>
         </div>
         <div class="cards-grid" id="linhagem-habilidades"></div>
         <p id="lineage-skills-empty" class="ability-list-empty" hidden>Nenhuma habilidade encontrada.</p>
@@ -334,7 +337,10 @@
           </div>
           <button type="button" id="btn-open-abilities" class="btn btn-primary" disabled>+ Escolher habilidades</button>
         </div>
-        <label class="ability-list-search path-skill-search"><span>Pesquisar nas adicionadas</span><input id="path-skills-search" type="search" placeholder="Buscar habilidades..."></label>
+        <div class="ability-list-actions path-skill-actions">
+          <label class="ability-list-search"><span>Pesquisar nas adicionadas</span><input id="path-skills-search" type="search" placeholder="Buscar habilidades..."></label>
+          <button type="button" class="btn btn-ghost ability-add-slot" data-add-ability-slot="hab">+ Novo slot</button>
+        </div>
         <div class="cards-grid" id="habilidades"></div>
         <p id="path-skills-empty" class="ability-list-empty" hidden>Nenhuma habilidade encontrada.</p>
       </div>
