@@ -889,6 +889,8 @@
     updatePathUI();
     renderBackgroundDetails();
     refreshAbilityLists();
+    clearWalletEntry();
+    renderWallet();
   }
 
   function onFieldInput(e) {
@@ -900,6 +902,7 @@
     });
     if (el.dataset.f === 'caminho') updatePathUI();
     if (el.dataset.f === 'antecedente') renderBackgroundDetails();
+    if (el.dataset.f.startsWith('moedas.')) renderWallet();
     if (/^pericia\..+\.(ante|treino|estatr)$/.test(el.dataset.f)) {
       recalcTotal(el.closest('.skill-row'));
     }
@@ -966,6 +969,153 @@
     sheetData['config.autoTotal'] = autoTotalOn();
     applyAutoTotalMode();
     recalcAllTotals();
+    scheduleSave();
+  });
+
+  /* ---------------- Carteira: Aurumker / Silker / Nikis ---------------- */
+
+  // 1 Aurumker = 10 Silker = 100 Nikis. Todo calculo passa por Nikis (a menor
+  // unidade) e so volta para as tres moedas na hora de gravar — e dai que sai
+  // o troco: gastar 5 Nikis tendo 1 Aurumker resulta em 9 Silker e 5 Nikis.
+  const COINS = [
+    { key: 'aurumker', label: 'Aurumker', nikis: 100 },
+    { key: 'silker', label: 'Silker', nikis: 10 },
+    { key: 'nikis', label: 'Nikis', nikis: 1 },
+  ];
+
+  const WALLET_LOG_MAX = 15;
+
+  function toNikis(valueOf) {
+    return COINS.reduce((total, coin) => total + num(valueOf(coin)) * coin.nikis, 0);
+  }
+
+  function fromNikis(total) {
+    let rest = Math.max(0, Math.trunc(total));
+    return COINS.map(coin => {
+      const amount = Math.floor(rest / coin.nikis);
+      rest -= amount * coin.nikis;
+      return { ...coin, amount };
+    });
+  }
+
+  function formatCoins(total) {
+    const parts = fromNikis(total).filter(coin => coin.amount > 0);
+    return parts.length ? parts.map(coin => `${coin.amount} ${coin.label}`).join(' · ') : '0 Nikis';
+  }
+
+  function walletBalance() {
+    return toNikis(coin => sheetData[`moedas.${coin.key}`]);
+  }
+
+  function walletEntry() {
+    return toNikis(coin => $(`#wallet-in-${coin.key}`).value);
+  }
+
+  function setWalletBalance(total) {
+    fromNikis(total).forEach(coin => {
+      const value = String(coin.amount);
+      sheetData[`moedas.${coin.key}`] = value;
+      $$(`[data-f="moedas.${coin.key}"]`).forEach(input => { input.value = value; });
+    });
+  }
+
+  function clearWalletEntry() {
+    COINS.forEach(coin => { $(`#wallet-in-${coin.key}`).value = ''; });
+  }
+
+  function readWalletLog() {
+    const entries = [];
+    for (let i = 0; i < WALLET_LOG_MAX; i++) {
+      const delta = Number(sheetData[`carteira.log.${i}.delta`]);
+      const saldo = Number(sheetData[`carteira.log.${i}.saldo`]);
+      if (!Number.isFinite(delta) || !Number.isFinite(saldo)) break;
+      entries.push({ delta, saldo, quando: sheetData[`carteira.log.${i}.quando`] });
+    }
+    return entries;
+  }
+
+  function writeWalletLog(entries) {
+    for (let i = 0; i < WALLET_LOG_MAX; i++) {
+      const entry = entries[i];
+      ['delta', 'saldo', 'quando'].forEach(field => {
+        const key = `carteira.log.${i}.${field}`;
+        if (entry) sheetData[key] = String(entry[field]);
+        else delete sheetData[key];
+      });
+    }
+  }
+
+  function formatWhen(value) {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime())
+      ? ''
+      : date.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+  }
+
+  function renderWallet() {
+    const balance = walletBalance();
+    const entry = walletEntry();
+    const missing = entry - balance;
+
+    $('#wallet-balance').textContent = `Saldo: ${formatCoins(balance)}`;
+
+    const preview = $('#wallet-preview');
+    if (entry <= 0) {
+      preview.textContent = 'Informe quanto custa para calcular o troco.';
+      preview.dataset.state = 'idle';
+    } else if (missing > 0) {
+      preview.textContent = `${formatCoins(entry)} — faltam ${formatCoins(missing)}`;
+      preview.dataset.state = 'error';
+    } else {
+      preview.textContent = `${formatCoins(entry)} — sobra ${formatCoins(-missing)}`;
+      preview.dataset.state = 'ok';
+    }
+    $('#wallet-spend').disabled = entry <= 0 || missing > 0;
+    $('#wallet-earn').disabled = entry <= 0;
+
+    const entries = readWalletLog();
+    $('#wallet-undo').disabled = entries.length === 0;
+    $('#wallet-empty').hidden = entries.length > 0;
+    $('#wallet-log').innerHTML = entries.map(item => `
+      <li class="wallet-log-item" data-kind="${item.delta < 0 ? 'saida' : 'entrada'}">
+        <span class="wallet-log-delta">${item.delta < 0 ? '−' : '+'} ${formatCoins(Math.abs(item.delta))}</span>
+        <span class="wallet-log-saldo">ficou com ${formatCoins(item.saldo)}</span>
+        <time>${formatWhen(item.quando)}</time>
+      </li>`).join('');
+  }
+
+  function registerWalletChange(delta) {
+    const saldo = walletBalance() + delta;
+    if (!delta || saldo < 0) return;
+    setWalletBalance(saldo);
+    writeWalletLog(
+      [{ delta, saldo, quando: new Date().toISOString() }, ...readWalletLog()].slice(0, WALLET_LOG_MAX)
+    );
+    clearWalletEntry();
+    renderWallet();
+    scheduleSave();
+  }
+
+  COINS.forEach(coin => {
+    $(`#wallet-in-${coin.key}`).addEventListener('input', renderWallet);
+  });
+
+  $('#wallet-spend').addEventListener('click', () => registerWalletChange(-walletEntry()));
+  $('#wallet-earn').addEventListener('click', () => registerWalletChange(walletEntry()));
+
+  $('#wallet-undo').addEventListener('click', () => {
+    const [last, ...rest] = readWalletLog();
+    if (!last) return;
+    // aplica o inverso sobre o saldo atual em vez de restaurar o saldo antigo,
+    // para nao apagar ajustes feitos a mao depois da transacao
+    const saldo = walletBalance() - last.delta;
+    if (saldo < 0) {
+      alert('Não dá para desfazer: o saldo atual é menor que o valor recebido.');
+      return;
+    }
+    setWalletBalance(saldo);
+    writeWalletLog(rest);
+    renderWallet();
     scheduleSave();
   });
 

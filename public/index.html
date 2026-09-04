@@ -243,6 +243,28 @@
               <label class="coin"><span>Silker</span><input data-f="moedas.silker" inputmode="numeric"></label>
               <label class="coin"><span>Nikis</span><input data-f="moedas.nikis" inputmode="numeric"></label>
             </div>
+            <p class="coins-rate">1 Aurumker = 10 Silker = 100 Nikis</p>
+
+            <div class="wallet">
+              <div class="wallet-head">
+                <h3 class="sub-title">Transação</h3>
+                <span class="wallet-balance" id="wallet-balance"></span>
+              </div>
+              <div class="coins coins-sm">
+                <label class="coin"><span>Aurumker</span><input id="wallet-in-aurumker" inputmode="numeric" placeholder="0" aria-label="Valor da transação: Aurumker"></label>
+                <label class="coin"><span>Silker</span><input id="wallet-in-silker" inputmode="numeric" placeholder="0" aria-label="Valor da transação: Silker"></label>
+                <label class="coin"><span>Nikis</span><input id="wallet-in-nikis" inputmode="numeric" placeholder="0" aria-label="Valor da transação: Nikis"></label>
+              </div>
+              <p class="wallet-preview" id="wallet-preview" data-state="idle" aria-live="polite"></p>
+              <div class="wallet-actions">
+                <button type="button" class="btn btn-danger" id="wallet-spend">Gastar</button>
+                <button type="button" class="btn btn-primary" id="wallet-earn">Receber</button>
+                <button type="button" class="btn btn-ghost" id="wallet-undo">Desfazer</button>
+              </div>
+              <ol class="wallet-log" id="wallet-log"></ol>
+              <p class="wallet-empty" id="wallet-empty">Nenhuma transação registrada nesta ficha.</p>
+            </div>
+
             <h3 class="sub-title">Maestrias</h3>
             <div id="maestrias"></div>
           </section>

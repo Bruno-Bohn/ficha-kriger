@@ -592,6 +592,78 @@ select { cursor: pointer; }
   padding: 6px 2px;
 }
 
+/* ---------------- Carteira: transacao e historico ---------------- */
+
+.coins-rate {
+  margin: 8px 0 0;
+  text-align: center;
+  font-size: .72rem;
+  font-style: italic;
+  letter-spacing: .05em;
+  color: var(--ink-soft);
+}
+
+.coins-sm { margin-top: 8px; gap: 8px; }
+.coins-sm .coin input {
+  font-size: .95rem;
+  border: 1.5px dashed var(--line);
+}
+
+.wallet-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 18px 0 0;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.wallet-head .sub-title { margin: 0; padding: 0; border: 0; }
+.wallet-balance { font-size: .78rem; font-weight: 700; white-space: nowrap; }
+
+.wallet-preview {
+  margin: 10px 0 0;
+  min-height: 1.2em;
+  text-align: center;
+  font-size: .82rem;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+.wallet-preview[data-state="ok"] { color: var(--ok); font-style: normal; font-weight: 600; }
+.wallet-preview[data-state="error"] { color: var(--accent); font-style: normal; font-weight: 700; }
+
+.wallet-actions { display: flex; gap: 8px; margin-top: 10px; }
+.wallet-actions .btn { flex: 1; padding: 9px 4px; font-size: .8rem; }
+
+.wallet-log { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 6px; }
+.wallet-log-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  gap: 4px 10px;
+  padding: 6px 9px;
+  font-size: .78rem;
+  background: rgba(33, 29, 24, .025);
+  border: 1px solid var(--line-soft);
+  border-left: 3px solid var(--line);
+  border-radius: 6px;
+}
+.wallet-log-item[data-kind="saida"] { border-left-color: var(--accent); }
+.wallet-log-item[data-kind="entrada"] { border-left-color: var(--ok); }
+.wallet-log-delta { font-weight: 700; white-space: nowrap; }
+.wallet-log-item[data-kind="saida"] .wallet-log-delta { color: var(--accent); }
+.wallet-log-item[data-kind="entrada"] .wallet-log-delta { color: var(--ok); }
+.wallet-log-saldo { color: var(--ink-soft); font-style: italic; }
+.wallet-log time { color: var(--ink-soft); font-size: .7rem; white-space: nowrap; }
+
+.wallet-empty {
+  margin: 10px 0 0;
+  text-align: center;
+  font-size: .78rem;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
 .maestria-row { display: grid; grid-template-columns: 1fr 70px; gap: 10px; padding: 3px 0; }
 .maestria-row input:last-child { text-align: center; border: 1.5px solid var(--line-soft); border-radius: 6px; }
 
